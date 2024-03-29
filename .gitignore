@@ -31,3 +31,24 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# 默认忽略的文件
+/shelf/
+/workspace.xml
+# 基于编辑器的 HTTP 客户端请求
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+HELP.md
+.idea/
+*.iml
+*.log
+/target/
+!/src/main/resources/
+!/src/test/resources/
+*.class
+.mvn/
+mvnw
+mvnw.cmd
