@@ -146,7 +146,7 @@ MyBatis
 ```
 ==> 原来之前程序中的Dao类都是由Hibernate方法实现的，我们调用Bean的地方会很多。如果需要批量替换，新建类加注解即可，调用的地方完全不用改变（依赖的是接口而不是bean）非常方便
 <br>
-<b>面向接口的编程思想</b>：降低耦合度
+<b>面向接口的编程思想</b>：降低耦合度<br>
 5. 新的问题出现了：如果有个奇葩需求，说我有部分地方需要用到原来的Hibernate技术，怎么办？`AlphaDao alphaDao = applicationContext.getBean(AlphaDao.class);`这行代码只能捕捉所有的Mybatis
 - bean有默认名，就是类名的首字母小写，如果觉得名字长， 可以自定义，可以用注解更改：`@Repository("alphaHibernate")`
 - 我们可以通过名字强制容器返回某个bean，代码如下：
@@ -277,7 +277,7 @@ com.nowcoder.community.service.AlphaService@787d1f9c
 
 进程已结束，退出代码为 0
 ```
-可以发现bean是单例的
+可以发现bean是单例的<br>
 3. 如果希望bean是多例的（少见），只要在希望多例的bean上加注解`@Scope("prototype")`
 - 再运行测试方法，输出：
 ```bash
