@@ -23,12 +23,13 @@
 - Controller：控制层<br>
 ![图解MVC](/imgs/MVC.png)
 <br>
-<b>请求 -> controller -> 业务层 -> 数据层 -> model -> view -> 响应（返回html）</b>
+<b>请求 -> controller -> 业务层 -> 数据层 -> model -> view -> 响应（返回html）</b><br>
 3. 核心组件：
-- 前端控制器（Front Controller）：<b>DispatcherServlet</b>，调用MVC<br>
-![图解DispatcherServlet](/imgs/DispatcherServlet.png)
+- 前端控制器（Front Controller）：<b>DispatcherServlet</b>，调用MVC
 <br>
-![详细图解DispatcherServlet](/imgs/DispatcherServlet2.png)
+![图解DispatcherServlet](https://raw.githubusercontent.com/1517005260/nowcoder/master/imgs/DispatcherServlet.png)
+<br>
+![详细图解DispatcherServlet](https://raw.githubusercontent.com/1517005260/nowcoder/master/imgs/DispatcherServlet2.png)
 
 ### [Thymeleaf](https://www.thymeleaf.org/doc/tutorials/3.1/usingthymeleaf.html)
 - 模板引擎
