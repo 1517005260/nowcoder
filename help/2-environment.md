@@ -3,10 +3,13 @@
 - <b>确保所有路径无中文、无空格</b>
 - `jdk`版本：17
   - [环境变量配置](https://zhuanlan.zhihu.com/p/582240447)
-  - 检查：`C:\Users\15170>java -version`<br>
-    `openjdk version "17.0.10" 2024-01-16 LTS`<br>
-    `OpenJDK Runtime Environment Corretto-17.0.10.7.1 (build 17.0.10+7-LTS)`<br>
-    `OpenJDK 64-Bit Server VM Corretto-17.0.10.7.1 (build 17.0.10+7-LTS, mixed mode, sharing)`<br>
+  - 检查：
+  ``` bash
+    C:\Users\15170>java -version
+    openjdk version "17.0.10" 2024-01-16 LTS
+    OpenJDK Runtime Environment Corretto-17.0.10.7.1 (build 17.0.10+7-LTS)
+    OpenJDK 64-Bit Server VM Corretto-17.0.10.7.1 (build 17.0.10+7-LTS, mixed mode, sharing)
+  ```
 
 
 ## [`Apache Maven`](https://maven.apache.org/) 安装配置
@@ -23,19 +26,25 @@
 - 我的版本：`apache-maven-3.9.6-bin.zip`
 - 解压完成后配置远程镜像仓库（阿里云）
   - 在`apache-maven-3.9.6-bin.zip/conf/settings.xml`修改`<mirrors>`
-    - 配置如下：`<mirror>`<br>
-              `<id>alimaven</id>`<br>
-              `<mirrorOf>central</mirrorOf>`<br>
-              `<name>aliyun maven</name>`<br>
-              `<url>https://maven.aliyun.com/repository/central</url>`<br>
-              `</mirror>`
+    - 配置如下：
+    ``` bash
+    <mirror>
+    <id>alimaven</id>
+    <mirrorOf>central</mirrorOf>
+    <name>aliyun maven</name>
+    <url>https://maven.aliyun.com/repository/central</url>
+    </mirror>
+    ```
 - 配置命令行环境变量
-  - 检查：`C:\Users\15170>mvn -version`<br>
-    `Apache Maven 3.9.6 (bc0240f3c744dd6b6ec2920b3cd08dcc295161ae)`<br>
-    `Maven home: D:\Program Files\apache-maven-3.9.6`<br>
-    `Java version: 1.8.0_402, vendor: Amazon.com Inc., runtime: C:\Users\15170\.jdks\corretto-1.8.0_402\jre`<br>
-    `Default locale: zh_CN, platform encoding: GBK`<br>
-    `OS name: "windows 11", version: "10.0", arch: "amd64", family: "windows"`<br>
+  - 检查：
+  ```bash
+  C:\Users\15170>mvn -version
+  Apache Maven 3.9.6 (bc0240f3c744dd6b6ec2920b3cd08dcc295161ae)
+  Maven home: D:\Program Files\apache-maven-3.9.6
+  Java version: 17.0.10, vendor: Amazon.com Inc., runtime: C:\Users\15170\.jdks\corretto-17.0.10
+  Default locale: zh_CN, platform encoding: GBK
+  OS name: "windows 11", version: "10.0", arch: "amd64", family: "windows"
+  ```
 
 ### [常用命令](https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html)
 1. 创建项目：`mvn archetype:generate -DgroupId=com.mycompany.app -DartifactId=my-app -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4 -DinteractiveMode=false`
