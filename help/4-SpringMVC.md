@@ -27,9 +27,9 @@
 3. 核心组件：
 - 前端控制器（Front Controller）：<b>DispatcherServlet</b>，调用MVC
 <br>
-![图解DispatcherServlet](https://raw.githubusercontent.com/1517005260/nowcoder/master/imgs/DispatcherServlet.png)
+![图解](/imgs/DispatcherServlet.png)
 <br>
-![详细图解DispatcherServlet](https://raw.githubusercontent.com/1517005260/nowcoder/master/imgs/DispatcherServlet2.png)
+![详细图解](/imgs/DispatcherServlet2.png)
 
 ### [Thymeleaf](https://www.thymeleaf.org/doc/tutorials/3.1/usingthymeleaf.html)
 - 模板引擎
