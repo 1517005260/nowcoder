@@ -419,3 +419,6 @@ public String getData(){
 ## IoC和依赖注入
 
 控制反转（Inversion of Control, IoC）是设计原则，用于减少耦合。在Spring中，主要通过依赖注入（DI）实现。例如，`@Autowired`注解告诉Spring容器，为`alphaDao`属性注入实例，使`alphaDao.select()`方法能调用时，`alphaDao`已是被Spring容器管理并注入的Bean。
+
+## 类比
+@Autowired就和js中的this.root=root差不多（抛开实现机制），目的都是为了建立类和类之间的关联
