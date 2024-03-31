@@ -108,10 +108,16 @@ mysql> show tables;
 
 ### 代码实例：使用MyBatis对user表进行增删改查
 1. usr表有什么属性？<br>
+
+
 ![user](/imgs/user.png)
 <br>
-- 其中，password是加密过的密码。salt是5位随机字符串，为了防止用户密码过于简单，于是在后面拼上了5位字符串再加密，防止被轻易破解。type是用户类型，0普通用户，1管理员，2版主。status表示是否激活。active_code是激活码。
-```
+
+
+- 其中，password是加密过的密码。salt是5位随机字符串，为了防止用户密码过于简单，于是在后面拼上了5位字符串再加密，防止被轻易破解。type是用户类型，0普通用户，1管理员，2版主。status表示是否激活。active_code是激活码。<br>
+
+
+``` sql
 //详细建表语句
 CREATE TABLE `user` (
                         `id` int NOT NULL AUTO_INCREMENT,
@@ -129,9 +135,14 @@ CREATE TABLE `user` (
                         KEY `index_email` (`email`(20))
 ) ENGINE=InnoDB AUTO_INCREMENT=150 DEFAULT CHARSET=utf8mb3
 ```
+
+<br>
 2. 导入数据库相关包
 - 打开之前说的[查包网站](https://mvnrepository.com)
 - 搜索mysql，点击排名第一的包，找到如下maven配置，复制粘贴即可：
+
+<br>
+
 ```xml
 <dependency>
     <groupId>com.mysql</groupId>
@@ -139,7 +150,7 @@ CREATE TABLE `user` (
     <version>8.3.0</version>
 </dependency>
 ```
-- 同理搜索MyBatis，选择SpringBoot整合版
+- 同理搜索MyBatis，选择SpringBoot整合版<br>
 ```xml
 <dependency>
     <groupId>org.mybatis.spring.boot</groupId>
@@ -147,7 +158,7 @@ CREATE TABLE `user` (
     <version>3.0.3</version>
 </dependency>
 ```
-3. 配置MyBatis，在Spring Boot整合下直接进入`application.properties`配置即可
+3. 配置MyBatis，在Spring Boot整合下直接进入`application.properties`配置即可<br>
 ```bash
 # DataSourceProperties // MySQL
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver  # 连接数据库的工具
@@ -166,6 +177,9 @@ mybatis.configuration.useGeneratedKeys=true #可以获取数据库自动生成�
 # ex. head_url -> headUrl
 mybatis.configuration.mapUnderscoreToCamelCase=true # 将数据库中的下划线命名映射到java中的驼峰命名
 ```
+
+<br>
+
 4. 访问表之前，先要有实体类`entity`。我们在entity下新建类User与user表一一对应
 - 以驼峰命名类的属性对应表的字段
 - `alt+insert`自动生成对应的get和set、以及toString方法
