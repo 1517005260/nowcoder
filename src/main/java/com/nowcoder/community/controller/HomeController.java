@@ -29,7 +29,7 @@ public class HomeController {
     @RequestMapping(path = "/index", method = RequestMethod.GET)
     public String getIndexPage(Model model, Page page){
 
-        //方法调用前，SpringMVChi自动实例化Model和Page，并将Page注入Model
+        //方法调用前，SpringMVC会自动实例化Model和Page，并将Page注入Model
         //所以不用model.addAttribute(Page),直接在thmeleaf可以访问Page的数据
 
         page.setRows(discussPostService.findDiscussPostRows(0));
