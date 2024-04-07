@@ -70,7 +70,7 @@
 - 选择`Maven`安装路径，并重写`settings file`
 - 之后可以界面化用maven创建项目，效果和刚刚命令行一样，快捷键`ctrl+f9`
 - 可以在[这里](https://mvnrepository.com/)搜索需要的包
-3. 使用[`Spring Initializr`](https://start.spring.io/)创建项目，比maven更集成化，不用一个一个下包
+3. 使用[`Spring Initializr`](https://start.spring.io/)创建项目（我的Spring版本：3.2.4），比maven更集成化，不用一个一个下包
 - 分门别类整合了常用开发包，底层还是基于maven
 - 先导入这些包：`Spring Web, Thymeleaf, Dev Tools, Spring Web Services`剩下的包后续会逐渐导入
 - 网站上直接下载配置好的压缩包，本地解压即可
