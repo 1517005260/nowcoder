@@ -348,7 +348,7 @@ public String activation(Model model, @PathVariable("userId") int userId, @PathV
 }
 ```
 
-4. 用模板更新login.html，先初步处理，不用管逻辑
+4. 用模板更新login.html，先初步处理更新为thymeleaf模板，并更换固定验证码图片，不用管逻辑
 
 ```html
 <html lang="en" xmlns:th="https://www.thymeleaf.org">
@@ -356,6 +356,8 @@ public String activation(Model model, @PathVariable("userId") int userId, @PathV
 <link rel="stylesheet" th:href="@{/css/login.css}" />
 <header class="bg-dark sticky-top" th:replace="index::header">
 ...
+  <img th:src="@{/img/captcha.png}" style="width:100px;height:40px;" class="mr-2"/>
+  ...
 <script th:src="@{/js/global.js}"></script>
 ```
 
