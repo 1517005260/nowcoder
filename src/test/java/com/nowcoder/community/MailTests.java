@@ -28,11 +28,11 @@ public class MailTests {
     @Test
     public void testHTMLMail(){
         Context context = new Context();
-        context.setVariable("username","sunday");   //key-value
+        context.setVariable("username","pyx");   //key-value
 
         String content = templateEngine.process("/mail/demo",context);
         System.out.println(content);
 
-        mailClient.sendMail("1517005260@qq.com", "HTML test", content);
+        mailClient.sendMail("1749678363@qq.com", "HTML test", content);
     }
 }

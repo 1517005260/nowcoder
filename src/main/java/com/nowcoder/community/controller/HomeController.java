@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//首页controller映射路径可省
+//controller映射路径可省，这样直接访问的就是方法
 @Controller
 public class HomeController {
 
