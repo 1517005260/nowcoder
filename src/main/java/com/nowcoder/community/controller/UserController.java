@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 @Controller
 @RequestMapping(path = "/user")
@@ -82,7 +83,7 @@ public class UserController {
         return "redirect:/index";
     }
 
-    @RequestMapping(path = "/header{fileName}", method = RequestMethod.GET)
+    @RequestMapping(path = "/header/{fileName}", method = RequestMethod.GET)
     public void getHeader(@PathVariable("fileName") String fileName, HttpServletResponse response){
         // 服务器存放路径
         fileName = uploadPath + "/" + fileName;
@@ -101,6 +102,22 @@ public class UserController {
             }
         } catch (IOException e) {
             logger.error("读取头像失败：" + e.getMessage());
+        }
+    }
+
+    @RequestMapping(path = "/updatePassword", method = RequestMethod.POST)
+    public String updatePassword(String oldPassword, String newPassword1, String newPassword2,Model model){
+        User user = hostHolder.getUser();
+        if(user == null){
+            return "redirect:/index";
+        }
+        Map<String, Object> map = userService.updatePassword(user.getId(), oldPassword, newPassword1, newPassword2);
+        if (map == null || map.isEmpty()) {
+            return "redirect:/logout";
+        } else {
+            model.addAttribute("oldPasswordMsg", map.get("oldPasswordMsg"));
+            model.addAttribute("newPasswordMsg", map.get("newPasswordMsg"));
+            return "/site/setting";
         }
     }
 }
