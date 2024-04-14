@@ -76,13 +76,13 @@ public class UserController {
         //更新用户头像（非服务器，而是web路径）
         //http://...../community/user/header/xxx.png
         User user = hostHolder.getUser();
-        String headerUrl = domain + contextPath + "/user/header" + fileName;
+        String headerUrl = domain + contextPath + "/user/header/" + fileName;
         userService.updateHeader(user.getId(), headerUrl);
 
         return "redirect:/index";
     }
 
-    @RequestMapping(path = "/header/{fileName}", method = RequestMethod.GET)
+    @RequestMapping(path = "/header{fileName}", method = RequestMethod.GET)
     public void getHeader(@PathVariable("fileName") String fileName, HttpServletResponse response){
         // 服务器存放路径
         fileName = uploadPath + "/" + fileName;
@@ -93,7 +93,7 @@ public class UserController {
         try (
                 OutputStream os = response.getOutputStream();
                 FileInputStream fis = new FileInputStream(fileName);
-                ){
+        ){
             byte[] buffer = new byte[1024];
             int b = 0;
             while( (b = fis.read(buffer)) != -1){

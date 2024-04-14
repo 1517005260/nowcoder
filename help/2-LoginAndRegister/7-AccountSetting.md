@@ -2,7 +2,7 @@
 
 - 上传文件（本次课——用户上传的头像就存在本机服务器）
   - 必须是POST请求
-  - 表单：`enctype = "multipart/form-data"`
+  - 表单：`enctype = "multipart/form-data"`（传文件必须）
   - Spring MVC: 通过MultipartFile处理上传文件
 - 开发步骤
   - 访问账号设置页面
@@ -146,7 +146,7 @@ public class UserController {
         //更新用户头像（非服务器，而是web路径）
         //http://...../community/user/header/xxx.png
         User user = hostHolder.getUser();
-        String headerUrl = domain + contextPath + "/user/header" + fileName;
+        String headerUrl = domain + contextPath + "/user/header/" + fileName;
         userService.updateHeader(user.getId(), headerUrl);
 
         return "redirect:/index";
