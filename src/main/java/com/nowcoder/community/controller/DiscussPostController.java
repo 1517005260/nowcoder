@@ -31,7 +31,10 @@ public class DiscussPostController {
             return CommunityUtil.getJSONString(403, "你还没有登录哦!");  // 403表示没有权限
         }
         if (title == null || title.trim().isEmpty()) {
-            return CommunityUtil.getJSONString(400, "标题不能为空");  // 400表示请求错误
+            return CommunityUtil.getJSONString(400, "标题不能为空！");  // 400表示请求错误
+        }
+        if (content == null || content.trim().isEmpty()) {
+            return CommunityUtil.getJSONString(400, "内容不能为空！");
         }
         DiscussPost discussPost = new DiscussPost();
         discussPost.setUserId(user.getId());

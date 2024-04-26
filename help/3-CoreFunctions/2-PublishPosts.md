@@ -207,6 +207,9 @@ public class DiscussPostController {
     if (title == null || title.trim().isEmpty()) {
       return CommunityUtil.getJSONString(400, "标题不能为空");  // 400表示请求错误
     }
+    if (content == null || content.trim().isEmpty()) {
+      return CommunityUtil.getJSONString(400, "内容不能为空！");
+    }
     DiscussPost discussPost = new DiscussPost();
     discussPost.setUserId(user.getId());   //一定要记得插入id，否则前端接收到的user_id就是0，会报空指针异常
     discussPost.setTitle(title);
