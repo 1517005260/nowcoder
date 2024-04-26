@@ -18,4 +18,6 @@ public interface DiscussPostMapper {
     int selectDiscussPostRows(@Param("userId") int userId);  //@Param可以给参数起别名，使用名字过长的变量
     //另外 **若我想动态拼接sql，并且这个函数有且只有一个参数，就一定需要别名**
 
+    // 发布帖子
+    int insertDiscussPost(DiscussPost discussPost);
 }

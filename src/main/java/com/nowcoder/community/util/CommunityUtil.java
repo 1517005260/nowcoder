@@ -1,8 +1,12 @@
 package com.nowcoder.community.util;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.DigestUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.SplittableRandom;
 import java.util.UUID;
 
@@ -22,5 +26,34 @@ public class CommunityUtil {
             return null;
         }
         return DigestUtils.md5DigestAsHex(key.getBytes());
+    }
+
+    // 取得json串，转化成字符串
+    public static String getJSONString(int code, String message, Map<String, Object> map){
+        JSONObject json = new JSONObject();
+        json.put("code", code);
+        json.put("message", message);
+        if(map != null){
+            for(String key : map.keySet()){
+                json.put(key,map.get(key));
+            }
+        }
+        return json.toJSONString();
+    }
+
+    // 有时可能以上三个数据只有两个甚至一个，为了方便起见，我们进行重载
+    public static String getJSONString(int code, String message){
+        return getJSONString(code, message, null);
+    }
+    public static String getJSONString(int code){
+        return getJSONString(code, null, null);
+    }
+
+    // test-json
+    public static void main(String[] args) {
+        Map<String, Object> map =new HashMap<>();
+        map.put("name", "peter");
+        map.put("age", 25);
+        System.out.println(getJSONString(0, "ok", map));
     }
 }
