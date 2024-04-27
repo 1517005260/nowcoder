@@ -139,18 +139,20 @@
 					</div>
 				</li>
 			</ul>
-			<!-- 分页 -->
-			<nav class="mt-5" th:if="${page.rows>0}" th:fragment="pagination">
+			<!--分页 -->
+			<nav class="mt-5" th:if = "${page.rows>0}" th:fragment="pagination">
 				<ul class="pagination justify-content-center">
 					<li class="page-item">
 						<a class="page-link" th:href="@{${page.path}(current=1)}">首页</a>
 					</li>
 					<li th:class="|page-item ${page.current==1?'disabled':''}|">
-						<a class="page-link" th:href="@{${page.path}(current=${page.current-1})}">上一页</a></li>
-					<li th:class="|page-item ${i==page.current?'active':''}|" th:each="i:${#numbers.sequence(page.from,page.to)}">
-						<a class="page-link" href="#" th:text="${i}">1</a>
+						<a class="page-link" th:href="@{${page.path}(current=${page.current-1})}">上一页</a>
 					</li>
-					<li th:class="|page-item ${page.current==page.total?'disabled':''}|">
+					<!--numbers.sequence 生成一个 page.from 到 page.to 的连续整数数组-->
+					<li th:each="i:${#numbers.sequence(page.from,page.to)}" th:class="|page-item ${i==page.current? 'active' : ''}|" >
+						<a class="page-link" th:href="@{${page.path}(current=${i})}" th:text="${i}"></a>
+					</li>
+					<li th:class="|page-item ${page.current==page.total ? 'disabled':''}|">
 						<a class="page-link" th:href="@{${page.path}(current=${page.current+1})}">下一页</a>
 					</li>
 					<li class="page-item">
