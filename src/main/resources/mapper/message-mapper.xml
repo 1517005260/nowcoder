@@ -7,6 +7,10 @@
         id, from_id, to_id, conversation_id, content, status, create_time
     </sql>
 
+    <sql id="insertFields">
+        from_id, to_id, conversation_id, content, status, create_time
+    </sql>
+
     <select id="selectConversations" resultType="Message">  <!--max id 是为了找到最新的消息-->
         select <include refid="selectFields"></include>
         from message
@@ -62,5 +66,18 @@
           and conversation_id = #{conversationId}
           </if>
     </select>
+
+    <insert id="insertMessage" parameterType="Message" keyProperty="id">   <!--keyProperty是主键，插入会自动++-->
+        insert into message (<include refid="insertFields"></include>)
+        values (#{fromId}, #{toId}, #{conversationId}, #{content}, #{status}, #{createTime})
+    </insert>
+
+    <update id="updateStatus">
+        update message set status = #{status}
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">   <!--MyBatis循环语法，即for id in ids,以"(,)"作为分隔符-->
+            #{id}
+        </foreach>
+    </update>
 
 </mapper>
