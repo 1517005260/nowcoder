@@ -52,4 +52,10 @@ public class HomeController {
         model.addAttribute("discussPosts", discussPosts);
         return "index";
     }
+
+    // 重定向到错误页面
+    @RequestMapping(path = "/error", method = RequestMethod.GET)
+    public String getErrorPage(){
+        return "/error/500";
+    }
 }
