@@ -17,7 +17,8 @@ public interface CommunityConstant {
     //记住我
     int REMEMBER_EXPIRED_SECONDS = 3600*24*30;
 
-    // 实体类型——帖子1 评论2
+    // 实体类型——帖子1 评论2 用户3
     int ENTITY_TYPE_POST = 1;
     int ENTITY_TYPE_COMMENT = 2;
+    int ENTITY_TYPE_USER = 3;
 }
