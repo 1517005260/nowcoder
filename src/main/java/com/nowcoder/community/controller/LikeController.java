@@ -23,14 +23,14 @@ public class LikeController {
 
     @RequestMapping(path = "/like", method = RequestMethod.POST)
     @ResponseBody
-    public String like(int entityType, int entityId){
+    public String like(int entityType, int entityId, int entityUserId){
         User user = hostHolder.getUser();
         if(user == null){
             return CommunityUtil.getJSONString(1, "您还未登录！");
         }
         // 后续会用SpringSecurity统一判断有无登录
 
-        likeService.like(user.getId(), entityType, entityId);
+        likeService.like(user.getId(), entityType, entityId, entityUserId);
         long likeCount = likeService.findEntityLikeCount(entityType, entityId);
         int likeStatus = likeService.findEntityLikeStatus(user.getId(), entityType, entityId);
 
