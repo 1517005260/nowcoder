@@ -21,11 +21,17 @@ body {
 }
 
 header .navbar-brand {
-	background: url('http://static.nowcoder.com/images/res/logo/logo-v3.png') no-repeat;
 	background-size: 147px 42px;
 	width: 147px;
 	height: 42px;
 	margin: 5px 15px 5px 0;
+	user-select: none;
+	font-family: 'Arial', sans-serif;
+	font-size: 20px;
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 2px 2px 4px #000000;
+	transition: transform 0.3s;
 }
 
 header .navbar {
