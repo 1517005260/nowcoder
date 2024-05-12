@@ -21,4 +21,12 @@ public interface CommunityConstant {
     int ENTITY_TYPE_POST = 1;
     int ENTITY_TYPE_COMMENT = 2;
     int ENTITY_TYPE_USER = 3;
+
+    // topic：评论、点赞、关注
+    String TOPIC_COMMENT = "comment";
+    String TOPIC_LIKE = "like";
+    String TOPIC_FOLLOW = "follow";
+
+    // 系统用户id
+    int SYSTEM_USER_ID = 1;
 }
