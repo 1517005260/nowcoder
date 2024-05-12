@@ -24,7 +24,7 @@
 							<a class="nav-link" th:href="@{/index}">首页</a>
 						</li>
 						<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser!=null}">
-							<a class="nav-link position-relative" th:href="@{/letter/list}">消息<span class="badge badge-danger">12</span></a>
+							<a class="nav-link position-relative" th:href="@{/letter/list}">消息<span class="badge badge-danger" th:text="${allUnreadCount!=0?allUnreadCount:''}">12</span></a>
 						</li>
 						<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser==null}">
 							<a class="nav-link" th:href="@{/register}">注册</a>
@@ -43,6 +43,11 @@
 								<div class="dropdown-divider"></div>
 								<span class="dropdown-item text-center text-secondary" th:utext="${loginUser.username}">nowcoder</span>
 							</div>
+						</li>
+						<li class="nav-item ml-3 btn-group-vertical">
+							<a class="nav-link" href="https://github.com/1517005260/nowcoder" target="_blank">
+								<img src="https://app6534.acapp.acwing.com.cn/static/image/game/github.png" width="40" height="40">
+							</a>
 						</li>
 					</ul>
 					<!-- 搜索 -->

@@ -418,7 +418,7 @@ b. letter-html
   <ul class="list-unstyled">
     <li class="media pb-3 pt-3 mb-3 border-bottom position-relative" th:each="map:${conversations}">
       <span class="badge badge-danger" th:text="${map.unreadCount}" th:if="${map.unreadCount!=0}">3</span>
-      <a href="profile.html">
+      <a th:href="@{|/user/profile/${map.target.id}|}">
         <img th:src="${map.target.headerUrl}" class="mr-4 rounded-circle user-header" alt="用户头像" >
       </a>
       <div class="media-body">
@@ -460,7 +460,7 @@ c. letter-detail.html
   <!-- 私信列表 -->
   <ul class="list-unstyled mt-4">
     <li class="media pb-3 pt-3 mb-2" th:each="map:${letters}">
-      <a href="profile.html">
+      <a th:href="@{|/user/profile/${map.fromUser.id}|}">
         <img th:src="${map.fromUser.headerUrl}" class="mr-4 rounded-circle user-header" alt="用户头像" >
       </a>
       <div class="toast show d-lg-block" role="alert" aria-live="assertive" aria-atomic="true">

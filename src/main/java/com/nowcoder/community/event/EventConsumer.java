@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +58,7 @@ public class EventConsumer implements CommunityConstant {
         }
 
         message.setContent(JSONObject.toJSONString(content));
+        message.setCreateTime(new Date());
 
         messageService.addMessage(message);
     }

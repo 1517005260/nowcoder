@@ -196,6 +196,7 @@ public class EventConsumer implements CommunityConstant {
     }
 
     message.setContent(JSONObject.toJSONString(content));
+    message.setCreateTime(new Date());
 
     messageService.addMessage(message);
   }
