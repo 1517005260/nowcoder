@@ -33,7 +33,7 @@ path.logs: D:\elasticsearch-7.11.1\logs
 
 4. [中文分词插件](https://github.com/infinilabs/analysis-ik/releases/tag/v7.11.1) // 分词：搜索“互联网校招”，会分成：互联网、校招
 
-解压路径：`D:\elasticsearch-6.4.3\plugins\ik`
+解压路径：`D:\elasticsearch-7.11.1\plugins\ik`
 
 分词字典：`plugins\ik\config`下所有.dic文件
 
