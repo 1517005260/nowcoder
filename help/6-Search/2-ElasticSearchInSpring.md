@@ -226,9 +226,9 @@ public class ElasticSearchTests {
         // 遍历每个搜索命中对象
         DiscussPost post = hit.getContent();
         // 将高亮结果添加到返回的结果类中显示
-        var titleHighlight = hit.getHighlightField("title");  // 获取标题中的高亮字段“互联网寒冬”
-        if (titleHighlight.size() != 0) {
-          post.setTitle(titleHighlight.get(0));
+        var titleHighlight = hit.getHighlightField("title");
+        if (titleHighlight.size() != 0) {  // 如果标题中包含<em></em>
+          post.setTitle(titleHighlight.get(0)); // 那么就在内存中暂时修改格式，无Mapper不涉及数据库
         }
         var contentHighlight = hit.getHighlightField("content");
         if (contentHighlight.size() != 0) {
