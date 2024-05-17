@@ -80,7 +80,7 @@ public class ElasticSearchTests {
         // 在这里使用matches，而不是contains，contains必须包含完整的关键字，而matches不需要，如果要匹配更多字段使用or或者and
         Criteria criteria = new Criteria("title").matches("互联网寒冬").or(new Criteria("content").matches("互联网寒冬"));
 
-        // 高亮词语 高亮前端表示：<em></em>
+        // 高亮前端格式：<em></em>
         List<HighlightField> highlightFieldList = new ArrayList<>();
         HighlightField highlightField = new HighlightField("title", HighlightFieldParameters.builder().withPreTags("<em>").withPostTags("</em>").build());
         highlightFieldList.add(highlightField);
@@ -90,11 +90,11 @@ public class ElasticSearchTests {
         HighlightQuery highlightQuery = new HighlightQuery(highlight, DiscussPost.class);
 
         // 构建细化查询
-        CriteriaQueryBuilder builder = new CriteriaQueryBuilder(criteria)
+        CriteriaQueryBuilder builder = new CriteriaQueryBuilder(criteria)   // 指定关键词
                 .withSort(Sort.by(Sort.Direction.DESC, "type"))  // 置顶
                 .withSort(Sort.by(Sort.Direction.DESC, "score"))  // 热度
                 .withSort(Sort.by(Sort.Direction.DESC, "createTime"))  // 时间
-                .withHighlightQuery(highlightQuery)  // 指定高亮字段词
+                .withHighlightQuery(highlightQuery)  // 指定关键词高亮格式
                 .withPageable(PageRequest.of(0, 10));  //  按分页查询（第几页，显示几条数据）
         CriteriaQuery query = new CriteriaQuery(builder);
 
