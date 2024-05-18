@@ -34,7 +34,7 @@
 						</li>
 						<li class="nav-item ml-3 btn-group-vertical dropdown" th:if="${loginUser!=null}">
 							<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<img th:src="${loginUser.headerUrl}" class="rounded-circle" style="width:30px;"/>
+								<img th:src="${loginUser.headerUrl}" class="rounded-circle" style="width:40px;height: 40px"/>
 							</a>
 							<div class="dropdown-menu" aria-labelledby="navbarDropdown">
 								<a class="dropdown-item text-center" th:href="@{|/user/profile/${loginUser.id}|}">个人主页</a>
