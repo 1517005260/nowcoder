@@ -1,9 +1,7 @@
 package com.nowcoder.community.controller;
 
-import com.nowcoder.community.entity.Comment;
-import com.nowcoder.community.entity.DiscussPost;
-import com.nowcoder.community.entity.Page;
-import com.nowcoder.community.entity.User;
+import com.nowcoder.community.entity.*;
+import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.service.CommentService;
 import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.service.LikeService;
@@ -39,6 +37,9 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private LikeService likeService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     //处理增加帖子异步请求
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody
@@ -60,8 +61,15 @@ public class DiscussPostController implements CommunityConstant {
         discussPost.setCreateTime(new Date());
         discussPostService.addDiscussPost(discussPost);
 
+        // 发帖事件，存进es服务器
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(discussPost.getId());
+        eventProducer.fireEvent(event);
+
         return CommunityUtil.getJSONString(0, "发布成功！");
-        //报错将来统一处理
     }
 
     //帖子详情
