@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -46,6 +47,12 @@ public class MessageService {
 
     public int readMessage(List<Integer> ids){
         return messageMapper.updateStatus(ids, 1);
+    }
+
+    // 删除消息/通知
+    // 由于mappper接收的是数组，而删除消息点x删除的只是一条，所以需要转换
+    public int deleteMessage(int id){
+        return  messageMapper.updateStatus(Arrays.asList(new Integer[]{id}), 2);
     }
 
     public Message findLatestNotice(int userId, String topic){
