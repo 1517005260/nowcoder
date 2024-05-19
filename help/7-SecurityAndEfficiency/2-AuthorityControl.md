@@ -213,6 +213,9 @@ public void afterCompletion(HttpServletRequest request, HttpServletResponse resp
 在LoginController中处理退出：
 
 ```java
+@Autowired
+private SecurityContextLogoutHandler securityContextLogoutHandler;
+
 @RequestMapping(path = "/logout", method = RequestMethod.GET)
 public String logout(@CookieValue("ticket") String ticket, HttpServletRequest request,
                      HttpServletResponse response, Authentication authentication) {

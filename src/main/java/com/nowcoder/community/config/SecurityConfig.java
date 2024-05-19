@@ -41,7 +41,19 @@ public class SecurityConfig implements CommunityConstant {
                         AUTHORITY_USER,
                         AUTHORITY_ADMIN,
                         AUTHORITY_MODERATOR
-                ).anyRequest().permitAll()   // 其他任何请求都放行
+                )
+                .requestMatchers(
+                        "/discuss/top",
+                        "/discuss/wonderful"
+                ).hasAnyAuthority(
+                        AUTHORITY_MODERATOR
+                )
+                .requestMatchers(
+                        "/discuss/delete"
+                ).hasAnyAuthority(
+                        AUTHORITY_ADMIN
+                )
+                .anyRequest().permitAll()   // 其他任何请求都放行
         );
 
         // 权限不够时的处理：1）普通请求——跳转html页面 2）异步请求——返回json
