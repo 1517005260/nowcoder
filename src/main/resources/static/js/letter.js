@@ -10,6 +10,12 @@ function send_letter() {
 	let toName = $("#recipient-name").val();
 	let content = $("#message-text").val();
 
+	let token = $("meta[name= '_csrf']").attr("content");
+	let header = $("meta[name= '_csrf_header']").attr("content");
+	$(document).ajaxSend(function (e, xhr, options){
+		xhr.setRequestHeader(header, token);
+	});
+
 	$.post(
 		CONTEXT_PATH + "/letter/send",
 		{"toName":toName, "content":content},
@@ -36,6 +42,12 @@ function delete_msg() {
 	let btn = this;
 	let id = $(btn).prev().val();
 
+	let token = $("meta[name= '_csrf']").attr("content");
+	let header = $("meta[name= '_csrf_header']").attr("content");
+	$(document).ajaxSend(function (e, xhr, options){
+		xhr.setRequestHeader(header, token);
+	});
+
 	$.post(
 		CONTEXT_PATH + "/letter/delete",
 		{"id": id},
@@ -53,6 +65,12 @@ function delete_msg() {
 function delete_notice() {
 	let btn = this;
 	let id = $(btn).prev().val();
+
+	let token = $("meta[name= '_csrf']").attr("content");
+	let header = $("meta[name= '_csrf_header']").attr("content");
+	$(document).ajaxSend(function (e, xhr, options){
+		xhr.setRequestHeader(header, token);
+	});
 
 	$.post(
 		CONTEXT_PATH + "/notice/delete",

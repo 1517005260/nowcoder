@@ -10,6 +10,12 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -24,6 +30,9 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
 
     @Autowired
     private HostHolder hostHolder;
+
+    @Autowired
+    private SecurityContextRepository securityContextRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -42,6 +51,14 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
                 //由于浏览器和服务器是多对一的多线程并发关系，所以要保证每个线程独立不受影响
                 //所以存入ThreadLocal里
                 hostHolder.setUser(user);
+
+                // 重构，配合SpringSecurity，类似hostHolder一样，把用户的权限通过ContextHolder存入SecurityContext，便于Security进行授权
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        user, user.getPassword(), userService.getAuthorities(user.getId())
+                );// 构造凭证
+                SecurityContextHolder.setContext(new SecurityContextImpl(authentication));  // 传入Context
+                // 将SecurityContext存入SecurityContextRepository中  相当于存入数据库
+                securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response);
             }
         }
         return true;
@@ -59,6 +76,7 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        hostHolder.clear(); //清理
+        hostHolder.clear(); // 清理登录信息
+        // 这里不需要清理授权信息，在logoutController中处理即可
     }
 }

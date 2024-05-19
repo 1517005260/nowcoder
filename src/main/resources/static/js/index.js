@@ -9,6 +9,13 @@ function publish() {
 	let title = $("#recipient-name").val();
 	let content = $("#message-text").val();
 
+	// 发送AJAX前，带上csrf令牌
+	let token = $("meta[name= '_csrf']").attr("content");
+	let header = $("meta[name= '_csrf_header']").attr("content");
+	$(document).ajaxSend(function (e, xhr, options){
+		xhr.setRequestHeader(header, token);
+	});
+
 	//ajax
 	$.post(
 		CONTEXT_PATH + "/discuss/add",
