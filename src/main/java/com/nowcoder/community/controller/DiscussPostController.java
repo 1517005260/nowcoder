@@ -156,7 +156,9 @@ public class DiscussPostController implements CommunityConstant {
     @RequestMapping(path = "/top", method = RequestMethod.POST)
     @ResponseBody  // 异步请求
     public String setTop(int id){
-        discussPostService.updateType(id, 1);
+        DiscussPost post = discussPostService.findDiscussPostById(id);
+        int type = post.getType() == 1 ? 0 : 1;
+        discussPostService.updateType(id, type);
 
         // 别忘了把最新的帖子状态同步给es
         Event event = new Event()
@@ -173,7 +175,9 @@ public class DiscussPostController implements CommunityConstant {
     @RequestMapping(path = "/wonderful", method = RequestMethod.POST)
     @ResponseBody
     public String setWonderful(int id){
-        discussPostService.updateStatus(id, 1);
+        DiscussPost post = discussPostService.findDiscussPostById(id);
+        int status = post.getStatus() == 1 ? 0 : 1;
+        discussPostService.updateStatus(id, status);
 
         Event event = new Event()
                 .setTopic(TOPIC_PUBLISH)

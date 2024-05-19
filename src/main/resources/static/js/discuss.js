@@ -41,8 +41,8 @@ function setTop(){
         function (data){
             data = $.parseJSON(data);
             if(data.code == 0){
-                // 点过置顶按钮后disable
-                $("#topBtn").attr("disabled", "disabled");
+                $("#topBtn").text(data.type === 1 ? '取消置顶' : '置顶');
+                location.reload();
             }else{
                 alert(data.msg);
             }
@@ -63,7 +63,8 @@ function setWonderful(){
         function (data){
             data = $.parseJSON(data);
             if(data.code == 0){
-                $("#wonderfulBtn").attr("disabled", "disabled");
+                $("#wonderfulBtn").text(data.status == 1 ? '取消加精' : '加精');
+                location.reload();
             }else{
                 alert(data.msg);
             }
