@@ -122,12 +122,12 @@ public class AlphaService {
     }
 
     // 线程池测试
-    @Async  // 让该方法在多线程的环境下被异步调用
+    //@Async  // 让该方法在多线程的环境下被异步调用
     public void execute1(){
         logger.debug("execute1");
     }
 
-    @Scheduled(initialDelay = 10000, fixedRate = 1000)  // 相当于在配置taskScheduler
+    //@Scheduled(initialDelay = 10000, fixedRate = 1000)  // 相当于在配置taskScheduler
     public void execute2(){
         logger.debug("execute2");
     }

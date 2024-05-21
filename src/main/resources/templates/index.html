@@ -29,6 +29,9 @@
 						<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser!=null}">
 							<a class="nav-link position-relative" th:href="@{/letter/list}">消息<span class="badge badge-danger" th:text="${allUnreadCount!=0?allUnreadCount:''}">12</span></a>
 						</li>
+						<li class="nav-item ml-3 btn-group-vertical" sec:authorize="hasAnyAuthority('admin')">
+							<a class="nav-link" th:href="@{/data}">网站数据统计</a>
+						</li>
 						<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser==null}">
 							<a class="nav-link" th:href="@{/register}">注册</a>
 						</li>
@@ -51,9 +54,6 @@
 							<a class="nav-link" href="https://github.com/1517005260/nowcoder" target="_blank">
 								<img src="https://app6534.acapp.acwing.com.cn/static/image/game/github.png" width="40" height="40">
 							</a>
-						</li>
-						<li class="nav-item ml-3 btn-group-vertical" sec:authorize="hasAnyAuthority('admin')">
-							<a class="nav-link" th:href="@{/data}">网站数据统计</a>
 						</li>
 					</ul>
 					<!-- 搜索 -->

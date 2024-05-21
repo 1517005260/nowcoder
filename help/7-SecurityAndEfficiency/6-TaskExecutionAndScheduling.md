@@ -554,6 +554,19 @@ public class QuartzConfig {
 
 现在启动服务后能正常运行，但是数据库中并没有数据，因为默认读取内存，还需要自己配置持久化到数据库
 
+| **属性** | **FactoryBean** | **BeanFactory** |
+|---|---|---|
+| **定义** | `FactoryBean` 是Spring提供的一个特殊的bean，可以定制复杂bean的创建过程。 | `BeanFactory` 是Spring IoC容器的顶层接口，负责管理bean的生命周期。 |
+| **作用** | 用于封装和定制bean的实例化逻辑，简化复杂bean的创建过程。 | 作为Spring容器的核心接口，负责创建、管理和配置bean。 |
+| **实现方式** | 实现 `FactoryBean<T>` 接口，需要实现 `getObject()`, `getObjectType()`, `isSingleton()` 方法。 | 实现类包括 `DefaultListableBeanFactory`, `XmlBeanFactory` 等，提供标准的bean管理功能。 |
+| **返回类型** | 返回由 `getObject()` 方法创建的实际bean实例。 | 直接管理和返回配置的bean实例。 |
+| **用法** | 将 `FactoryBean` 实例注册到Spring容器中，其他bean通过 `FactoryBean` 获取实际的bean实例。 | 通过配置文件或注解定义bean，然后由容器管理其生命周期。 |
+| **示例** | `JobDetailFactoryBean` 用于创建Quartz的 `JobDetail` 实例。 | `XmlBeanFactory` 通过读取XML配置文件创建和管理bean。 |
+| **复杂性** | 适用于需要复杂实例化逻辑的bean。 | 适用于大多数标准bean的管理和实例化。 |
+| **实例获取** | 通过 `&beanName` 获取 `FactoryBean` 实例，通过 `beanName` 获取 `FactoryBean` 创建的实际bean实例。 | 通过 `beanName` 直接获取bean实例。 |
+| **生命周期** | `FactoryBean` 本身也是一个bean，由Spring容器管理其生命周期。 | 管理所有bean的生命周期，包括创建、初始化、销毁等。 |
+
+
 4. quartz的持久化相关配置：
 
 ```
