@@ -297,3 +297,15 @@ public class DataController {
                         AUTHORITY_ADMIN
                 )
 ```
+
+7. 给前端加个“网站数据统计”按钮，否则admin想访问数据统计页面必须敲url，非常不方便
+
+在index的导航栏新增：
+
+```html
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<li class="nav-item ml-3 btn-group-vertical" sec:authorize="hasAnyAuthority('admin')">
+  <a class="nav-link" th:href="@{/data}">网站数据统计</a>
+</li>
+```

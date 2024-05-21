@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -51,6 +51,9 @@
 							<a class="nav-link" href="https://github.com/1517005260/nowcoder" target="_blank">
 								<img src="https://app6534.acapp.acwing.com.cn/static/image/game/github.png" width="40" height="40">
 							</a>
+						</li>
+						<li class="nav-item ml-3 btn-group-vertical" sec:authorize="hasAnyAuthority('admin')">
+							<a class="nav-link" th:href="@{/data}">网站数据统计</a>
 						</li>
 					</ul>
 					<!-- 搜索 -->
