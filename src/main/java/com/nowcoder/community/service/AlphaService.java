@@ -8,7 +8,11 @@ import com.nowcoder.community.entity.User;
 import com.nowcoder.community.util.CommunityUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -22,6 +26,7 @@ import java.util.Date;
 
 @Service
 public class AlphaService {
+    private static final Logger logger = LoggerFactory.getLogger(AlphaService.class);
 
     //依赖注入
     @Autowired
@@ -114,5 +119,16 @@ public class AlphaService {
                 return "ok";
             }
         });
+    }
+
+    // 线程池测试
+    @Async  // 让该方法在多线程的环境下被异步调用
+    public void execute1(){
+        logger.debug("execute1");
+    }
+
+    @Scheduled(initialDelay = 10000, fixedRate = 1000)  // 相当于在配置taskScheduler
+    public void execute2(){
+        logger.debug("execute2");
     }
 }
