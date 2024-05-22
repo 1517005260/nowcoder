@@ -47,7 +47,8 @@
 							>关注TA</button>
 						</h5>
 						<div class="text-muted mt-3">
-							<span>注册于 <i class="text-muted" th:text="${#dates.format(user.createTime, 'yyyy-MM-dd HH:mm:ss')}">2015-06-12 15:20:12</i></span>
+							<span style="margin-right: 20px;">注册于 <i class="text-muted" th:text="${#dates.format(user.createTime, 'yyyy-MM-dd HH:mm:ss')}">2015-06-12 15:20:12</i></span>
+							<span>uid: <i class="text-muted" th:text="${user.id}"></i></span>
 						</div>
 						<div class="text-muted mt-3 mb-5">
 							<span>关注了 <a class="text-primary" th:href="@{|/followees/${user.id}|}" th:text="${followeeCount}">5</a> 人</span>

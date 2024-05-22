@@ -44,8 +44,8 @@ public class ElasticSearchTests {
 
     @Test
     public void insertList() {  // 多条数据插入
-        discussRepository.saveAll(discussMapper.selectDiscussPosts(101, 0, 100));  // 肯定条数不足limit，这里是配合mapper方法进行分页
-        discussRepository.saveAll(discussMapper.selectDiscussPosts(102, 0, 100));
+        discussRepository.saveAll(discussMapper.selectDiscussPosts(101, 0, 100, 0));  // 肯定条数不足limit，这里是配合mapper方法进行分页
+        discussRepository.saveAll(discussMapper.selectDiscussPosts(102, 0, 100, 0));
         // 结果查看：postman GET  localhost:9200/discusspost/_search
     }
 

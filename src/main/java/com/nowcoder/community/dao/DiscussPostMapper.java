@@ -12,7 +12,7 @@ public interface DiscussPostMapper {
     //"我的帖子"功能预备，但是首页查询不需要提供uerId，因为是查全体帖子
     //因此需要动态sql，有时需要userId，有时不需要
     //mysql的分页功能很方便，只要改limit参数即可，传入每页的起始行行号offset和最多显示多少条数据limit
-    List<DiscussPost> selectDiscussPosts(int userId, int offset, int limit);
+    List<DiscussPost> selectDiscussPosts(int userId, int offset, int limit, int orderMode); //orderMode0,最新，1，最热
 
     //页数 = 帖子数 / 每页贴子数
     int selectDiscussPostRows(@Param("userId") int userId);  //@Param可以给参数起别名，使用名字过长的变量
@@ -30,4 +30,5 @@ public interface DiscussPostMapper {
     // 帖子操作
     int updateType(int id, int type);
     int updateStatus(int id, int status);
+    int updateScore(int id, double score);
 }
