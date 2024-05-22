@@ -20,6 +20,11 @@
 		<div class="main">
 			<div class="container">
 				<h6><b class="square"></b> 相关帖子</h6>
+				<!-- 判断搜索结果是否为空 -->
+				<div th:if="${#lists.isEmpty(discussPosts)}">
+					<img th:src="@{/img/noResult.png}" alt="无搜索结果" class="img-fluid mx-auto d-block mt-4">
+					<p class="text-center mt-3">没有找到相关内容，请尝试其他关键词。</p>
+				</div>
 				<!-- 帖子列表 -->
 				<ul class="list-unstyled mt-4">
 					<li class="media pb-3 pt-3 mb-3 border-bottom" th:each="map:${discussPosts}">

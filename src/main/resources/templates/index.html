@@ -52,14 +52,14 @@
 						</li>
 						<li class="nav-item ml-3 btn-group-vertical">
 							<a class="nav-link" href="https://github.com/1517005260/nowcoder" target="_blank">
-								<img src="https://app6534.acapp.acwing.com.cn/static/image/game/github.png" width="40" height="40">
+								<img th:src="@{/img/github.png}" width="40" height="40">
 							</a>
 						</li>
 					</ul>
 					<!-- 搜索 -->
 					<form class="form-inline my-2 my-lg-0" th:action="@{/search}" method="get" onsubmit="return validateForm()">
 						<input class="form-control mr-sm-2" type="search" aria-label="Search" name="keyword" id="keyword" th:value="${keyword}" />
-						<button class="btn btn-outline-light my-2 my-sm-0" type="submit">搜索</button>
+						<button class="btn btn-outline-light my-2 my-sm-0" type="submit">搜索帖子</button>
 					</form>
 					<div id="alert-box" style="position: fixed;
 			top: -100px; /* 初始位置在视线外 */
@@ -225,7 +225,7 @@
 			<div class="row">
 				<!-- wx二维码 -->
 				<div class="col-4 qrcode">
-					<img src="https://app6534.acapp.acwing.com.cn/static/image/game/wx.png" class="img-thumbnail" style="width:136px;" />
+					<img th:src="@{/img/wx.png}" class="img-thumbnail" style="width:136px;" />
 				</div>
 				<!-- 个人信息 -->
 				<div class="col-4 detail">
@@ -250,7 +250,7 @@
 				</div>
 				<!-- qq二维码 -->
 				<div class="col-4 qrcode">
-					<img src="https://app6534.acapp.acwing.com.cn/static/image/game/qq.png" class="img-thumbnail" style="width:136px;" />
+					<img th:src="@{/img/qq.png}" class="img-thumbnail" style="width:136px;" />
 				</div>
 			</div>
 		</div>

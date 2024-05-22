@@ -74,8 +74,12 @@
 							</div>
 						</div>
 					</div>
-				</div>				
-				
+				</div>
+				<!-- 判断私信是否为空 -->
+				<div th:if="${#lists.isEmpty(conversations)}">
+					<img th:src="@{/img/noResult.png}" alt="无私信" class="img-fluid mx-auto d-block mt-4">
+					<p class="text-center mt-3">你暂时没有新的私信哦~</p>
+				</div>
 				<!-- 私信列表 -->
 				<ul class="list-unstyled">
 					<li class="media pb-3 pt-3 mb-3 border-bottom position-relative" th:each="map:${conversations}">

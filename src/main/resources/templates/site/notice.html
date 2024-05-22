@@ -31,8 +31,13 @@
 							<a class="nav-link position-relative active" th:href="@{/notice/list}">系统通知<span class="badge badge-danger" th:text="${noticeUnreadCount}" th:if="${noticeUnreadCount!=0}">27</span></a>
 						</li>
 					</ul>
-				</div>	
-				
+				</div>
+
+				<!--通知为空-->
+				<div th:if="${commentNotice == null && likeNotice == null && followNotice == null}">
+					<img th:src="@{/img/noResult.png}" alt="无通知" class="img-fluid mx-auto d-block mt-4">
+					<p class="text-center mt-3">你暂时没有新的通知哦~</p>
+				</div>
 				<!-- 通知列表 -->
 				<ul class="list-unstyled">
 					<!--comment-->
