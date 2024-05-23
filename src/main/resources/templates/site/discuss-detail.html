@@ -9,6 +9,23 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
 	<link rel="stylesheet" th:href="@{/css/global.css}" />
 	<link rel="stylesheet" th:href="@{/css/discuss-detail.css}" />
+	<style>
+		.custom-alert {
+			display: none;
+			position: fixed;
+			top: 10%;
+			left: 50%;
+			transform: translateX(-50%);
+			background-color: #f8d7da;
+			color: #721c24;
+			padding: 10px 20px;
+			border-radius: 5px;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+			z-index: 1000;
+			font-size: 16px;
+			line-height: 1.5;
+		}
+	</style>
 	<title>帖子详情</title>
 </head>
 <body>
@@ -24,7 +41,7 @@
 				<!-- 标题 -->
 				<h6 class="mb-4">
 					<img src="http://static.nowcoder.com/images/img/icons/ico-discuss.png"/>
-					<span th:utext="${post.title}">备战春招，面试刷题跟他复习，一个月全搞定！</span>
+					<span th:utext="${post.title}" id="title">备战春招，面试刷题跟他复习，一个月全搞定！</span>
 					<div class="float-right">
 						<input type="hidden" id="postId" th:value="${post.id}">
 						<button type="button" class="btn btn-danger btn-sm" id="topBtn"
@@ -33,6 +50,9 @@
 								th:text="${post.status==1?'取消加精':'加精'}" sec:authorize="hasAnyAuthority('moderator')">加精</button>
 						<button type="button" class="btn btn-danger btn-sm" id="deleteBtn"
 								th:disabled="${post.status==2}" sec:authorize="hasAnyAuthority('admin')">删除</button>
+						<button type="button" class="btn btn-danger btn-sm" id="shareBtn"
+								sec:authorize="hasAnyAuthority('moderator', 'admin', 'user')">分享</button>
+						<div id="customAlert" class="custom-alert">链接复制成功！</div>
 					</div>
 				</h6>
 				<!-- 作者 -->
@@ -41,7 +61,7 @@
 						<img th:src="${user.headerUrl}" class="align-self-start mr-4 rounded-circle user-header" alt="用户头像" >
 					</a>
 					<div class="media-body">
-						<div class="mt-0 text-warning" th:utext="${user.username}">寒江雪</div>
+						<div class="mt-0 text-warning" th:utext="${user.username}" id="author">寒江雪</div>
 						<div class="text-muted mt-3">
 							发布于 <b th:text="${#dates.format(post.createTime, 'yyyy-MM-dd HH:mm:ss')}">2019-04-15 15:32:18</b>
 							<ul class="d-inline float-right">

@@ -70,6 +70,8 @@ public class ShareController implements CommunityConstant {
 
         // 输出格式
         response.setContentType("/image/png");
+        // 用户下载
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + ".png\"");
 
         // 读取本地文件
         File file = new File(wkImageStorage + "/" + fileName + ".png");

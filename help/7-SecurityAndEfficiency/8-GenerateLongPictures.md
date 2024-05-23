@@ -243,3 +243,106 @@ public void getShareImage(@PathVariable("fileName")String fileName, HttpServletR
 }
 ```
 
+现在我们已经模拟好了后端的生成长图开发，由于该技术常用于app而web端少用，接下了自己开发简易的分享功能
+
+## 自己补充——完善分享功能
+
+1. 配置Security，只有登录用户才能分享
+
+```java
+http.authorizeHttpRequests(authorize -> authorize.requestMatchers(
+                        "/user/setting",  // 用户设置
+                        "/user/upload",   // 上传头像
+                        "/user/updatePassword",  // 修改密码
+                        "/discuss/add",   // 上传帖子
+                        "/comment/add/**", // 评论
+                        "/letter/**",     // 私信
+                        "/notice/**",    // 通知
+                        "/like",         // 点赞
+                        "/follow",       // 关注
+                        "/unfollow",      // 取消关注
+                        "/share/**"      // 分享
+                ).hasAnyAuthority(         // 这些功能只要登录就行
+                        AUTHORITY_USER,
+                        AUTHORITY_ADMIN,
+                        AUTHORITY_MODERATOR
+                )
+```
+
+2. 分享——在帖子详情页面点击分享，获得本页面的图片
+
+帖子详情的分享按钮：
+
+```html
+<style>
+  .custom-alert {
+    display: none;
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+</style>
+
+<button type="button" class="btn btn-danger btn-sm" id="shareBtn"
+        sec:authorize="hasAnyAuthority('moderator', 'admin', 'user')">分享</button>
+<div id="customAlert" class="custom-alert">链接复制成功！</div>
+
+
+<!--并且给标题和作者id，方便js查找-->
+<span th:utext="${post.title}" id="title">备战春招，面试刷题跟他复习，一个月全搞定！</span>
+<div class="mt-0 text-warning" th:utext="${user.username}" id="author">寒江雪</div>
+```
+
+在controller增加用户下载：
+
+```java
+response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + ".png\"");
+```
+
+增加分享的js逻辑：
+
+```javascript
+$("#shareBtn").click(share);
+
+var titleText="";
+var authorText = "";
+document.addEventListener("DOMContentLoaded", function() {
+  // 获取包含ID为"title"的元素
+  var title = document.getElementById("title");
+
+  // 获取元素的文本值
+  titleText = title.innerText; // 或者使用 textContent
+
+  var author = document.getElementById("author")
+  authorText = author.innerText;
+});
+function share(){
+  let currentUrl = window.location.href;
+  // 组织要复制的内容
+  const formattedText = `${titleText} - ${authorText}的帖子 - 校园论坛\n${currentUrl}`;
+
+  // 使用Clipboard API复制格式化后的内容到剪切板
+  navigator.clipboard.writeText(formattedText).then(() => {
+    // 显示自定义提示框
+    const customAlert = document.getElementById('customAlert');
+    customAlert.style.display = 'block';
+
+    // 1秒后自动隐藏提示框
+    setTimeout(() => {
+      customAlert.style.display = 'none';
+    }, 1000);
+  }).catch(err => {
+    // 复制失败时提示用户
+    alert('复制失败: ' + err);
+  });
+}
+```

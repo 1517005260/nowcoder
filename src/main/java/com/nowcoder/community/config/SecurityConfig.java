@@ -36,7 +36,8 @@ public class SecurityConfig implements CommunityConstant {
                         "/notice/**",    // 通知
                         "/like",         // 点赞
                         "/follow",       // 关注
-                        "/unfollow"      // 取消关注
+                        "/unfollow",      // 取消关注
+                        "/share/**"      // 分享
                 ).hasAnyAuthority(         // 这些功能只要登录就行
                         AUTHORITY_USER,
                         AUTHORITY_ADMIN,
