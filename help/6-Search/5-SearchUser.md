@@ -294,7 +294,81 @@ public String searchUser(String username, Page page, Model model){
 6. 新建页面searchUser
 
 ```html
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <link rel="icon" th:href="@{/img/icon.png}"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" th:href="@{/css/global.css}" />
+    <title>搜索结果</title>
+</head>
+<body>
+<div class="nk-container">
+    <!-- 头部 -->
+    <header class="bg-dark sticky-top" th:replace="index::header">
+    </header>
 
+    <!-- 内容 -->
+    <div class="main">
+        <div class="container">
+            <h6><b class="square"></b> 相关用户</h6>
+            <!-- 判断搜索结果是否为空 -->
+            <div th:if="${#lists.isEmpty(Users)}">
+                <img th:src="@{/img/noResult.png}" alt="无搜索结果" class="img-fluid mx-auto d-block mt-4">
+                <p class="text-center mt-3">没有找到相关用户呢~ 请尝试其他关键词！</p>
+            </div>
+            <!-- 用户列表 -->
+            <ul class="list-unstyled mt-4">
+                <li class="media pb-3 pt-3 mb-3 border-bottom" th:each="map:${Users}">
+                    <a th:href="@{|/user/profile/${map.uid}|}">
+                    <img th:src="${map.headerUrl}" class="mr-4 rounded-circle" alt="用户头像" style="width: 50px;height: 50px">
+                    </a>
+                    <div class="media-body">
+                        <h6 class="mt-0 mb-3">
+                            <a th:href="@{|/user/profile/${map.uid}|}" th:utext="${map.username}">备战<em>春招</em>，面试刷题跟他复习，一个月全搞定！</a>
+                        </h6>
+                        <span class="media-body">
+                            uid: <span th:text="${map.uid}"></span>
+                        </span>
+                        <span style="margin-left: 100px;">
+                            注册于 <span th:text="${#dates.format(map.createTime, 'yyyy-MM-dd HH:mm:ss')}"></span>
+                        </span>
+                    </div>
+                    <div class="status-badge" th:if="${map.type==0}"
+                         style="background-color: rgb(51, 133, 255);font-size: 14px;color: white;padding: 5px;border-radius: 10px;user-select: none">
+                        普通用户
+                    </div>
+                    <div class="status-badge" th:if="${map.type==1}"
+                         style="background-color: rgb(51, 133, 255);font-size: 14px;color: white;padding: 5px;border-radius: 10px;user-select: none">
+                        管理员
+                    </div>
+                    <div class="status-badge" th:if="${map.type==2}"
+                         style="background-color: rgb(51, 133, 255);font-size: 14px;color: white;padding: 5px;border-radius: 10px;user-select: none">
+                        版主
+                    </div>
+                </li>
+            </ul>
+            <!-- 分页 -->
+            <nav class="mt-5" th:replace="index::pagination">
+            </nav>
+        </div>
+    </div>
+
+    <!-- 尾部 -->
+    <footer class="bg-dark" th:replace="index::footer">
+    </footer>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script th:src="@{/js/global.js}"></script>
+</body>
+</html>
 ```
 
 index增加：
