@@ -22,16 +22,16 @@
 		<div class="container p-5 mt-3 mb-3">
 			<!-- 上传头像 -->
 			<h6 class="text-left text-info border-bottom pb-2">上传头像</h6>
-			<form class="mt-5" method="post" enctype="multipart/form-data" th:action="@{/user/upload}">
+			<form class="mt-5" id="uploadForm">
 				<div class="form-group row mt-4">
 					<label for="head-image" class="col-sm-2 col-form-label text-right">选择头像:</label>
 					<div class="col-sm-10">
 						<div class="custom-file">
-							<input type="file"
-								   th:class="|custom-file-input ${error!=null}?'is-invaild':''|"
-								   id="head-image" name="headerImage" lang="es" required="">
+							<input type="hidden" name="token" th:value="${uploadToken}">
+							<input type="hidden" name="key" th:value="${fileName}">
+							<input type="file" class="custom-file-input" id="head-image" name="file" lang="es" required="">
 							<label class="custom-file-label" for="head-image" data-browse="文件">选择一张图片</label>
-							<div class="invalid-feedback" th:text="${error}">
+							<div class="invalid-feedback">
 								该账号不存在!
 							</div>
 						</div>
@@ -104,6 +104,57 @@
 	$(function(){
 		bsCustomFileInput.init();
 	});
+</script>
+<script>
+	// 上传头像异步表单提交逻辑
+	$(function (){  // 页面加载完就调用本函数
+		$("#uploadForm").submit(upload);
+	});
+
+	function upload(){
+		let token = $("meta[name= '_csrf']").attr("content");
+		let header = $("meta[name= '_csrf_header']").attr("content");
+		$(document).ajaxSend(function (e, xhr, options){
+			xhr.setRequestHeader(header, token);
+		});
+
+		$.ajax({
+			url:"http://up-z0.qiniup.com",
+			method:"post",
+			processData: false, // 不要把表单转换成字符串
+			contentType:false, // 不让jquery设置上传类型
+			data:new FormData($("#uploadForm")[0]),
+			success:function (data){
+				if(data && data.code == 0){
+					let token = $("meta[name= '_csrf']").attr("content");
+					let header = $("meta[name= '_csrf_header']").attr("content");
+					$(document).ajaxSend(function (e, xhr, options){
+						xhr.setRequestHeader(header, token);
+					});
+					// 更新头像url
+					$.post(
+							CONTEXT_PATH + "/user/header/url",
+							{
+								"fileName": $("input[name='key']").val()
+							},
+							function (data) {
+								data = $.parseJSON(data);
+								if (data.code == 0) {
+									window.location.reload();
+								}
+								else {
+									alert(data.msg)
+								}
+							}
+					)
+				}else {
+					alert("上传头像失败！");
+				}
+			}
+		})
+
+		return false;  // 不提交表单（因为无action了，逻辑全交由七牛云），事件到此结束
+	}
 </script>
 </body>
 </html>
