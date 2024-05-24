@@ -112,6 +112,19 @@ public class UserController implements CommunityConstant {
         }
     }
 
+    @LoginRequired
+    @RequestMapping(path = "/updateUsername", method = RequestMethod.POST)
+    public String updateUsername(String username,Model model){
+        User user = hostHolder.getUser();
+        Map<String, Object> map = userService.updateUsername(user.getId(), username);
+        if (map == null || map.isEmpty()) {
+            return "redirect:/logout";
+        } else {
+            model.addAttribute("errorMsg", map.get("errorMsg"));
+            return "/site/setting";
+        }
+    }
+
     // 个人主页
     @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
     public String getProfilePage(@PathVariable("userId") int userId, Model model){

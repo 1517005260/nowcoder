@@ -54,4 +54,10 @@
         where id = #{id}
     </update>
 
+    <update id="updateUsername">
+        update user
+        set username = #{username}
+        where id = #{id}
+    </update>
+
 </mapper>

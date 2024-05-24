@@ -29,6 +29,9 @@ public class UserService implements CommunityConstant {
     @Autowired
     private TemplateEngine templateEngine;
 
+    @Autowired
+    private SensitiveFilter sensitiveFilter;
+
     @Value("${community.path.domain}")
     private String domain;  // 注入主域名，即“https://......”
 
@@ -201,6 +204,26 @@ public class UserService implements CommunityConstant {
             return map;
         }
         userMapper.updatePassword(userId, CommunityUtil.md5(newPassword1+ user.getSalt()));
+        clearCache(userId);
+        return map;
+    }
+
+    // 更新用户名
+    public Map<String, Object> updateUsername(int userId, String username){
+        Map<String, Object> map = new HashMap<>();
+        User user = userMapper.selectById(userId);
+        String oldUsername = user.getUsername();
+        username = sensitiveFilter.filter(username);
+
+        if (StringUtils.isBlank(username)) {
+            map.put("errorMsg", "新用户名不能为空！");
+            return map;
+        }
+        if(username.equals(oldUsername)){
+            map.put("errorMsg", "新用户名和旧用户名不能重复！");
+            return map;
+        }
+        userMapper.updateUsername(userId, username);
         clearCache(userId);
         return map;
     }
