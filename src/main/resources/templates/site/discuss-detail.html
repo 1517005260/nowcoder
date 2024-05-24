@@ -183,7 +183,7 @@
 								<li class="pb-3 pt-3">
 									<form method="post" th:action="@{|/comment/add/${post.id}|}">
 									<div>
-										<input type="text" class="input-size"  name="content" placeholder="请输入你的观点">
+										<input type="text" class="input-size"  name="content" placeholder="请输入你的观点" required>
 										<input type="hidden" name="entityType" value="2"> <!--评论-->
 										<input type="hidden" name="entityId" th:value="${cvo.comment.id}">
 									</div>
@@ -205,7 +205,7 @@
 				<form class="replyform" method="post" th:action="@{|/comment/add/${post.id}|}">
 					<p class="mt-3">
 						<a name="replyform"></a>
-						<textarea placeholder="在这里畅所欲言你的看法吧!" name="content"></textarea>
+						<textarea placeholder="在这里畅所欲言你的看法吧!" name="content" required></textarea>
 						<input type="hidden" name="entityType" value="1"> <!--帖子-->
 						<input type="hidden" name="entityId" th:value="${post.id}">
 					</p>
