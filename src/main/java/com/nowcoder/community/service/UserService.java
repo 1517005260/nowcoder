@@ -65,6 +65,10 @@ public class UserService implements CommunityConstant {
             map.put("passwordMsg", "密码不能为空！");
             return map;
         }
+        if(user.getPassword().length()<8){
+            map.put("passwordMsg", "密码不能少于8位！");
+            return map;
+        }
         if(StringUtils.isBlank(user.getEmail())){
             map.put("emailMsg", "邮箱不能为空！");
             return map;
@@ -193,6 +197,10 @@ public class UserService implements CommunityConstant {
         }
         if (StringUtils.isBlank(newPassword1) || StringUtils.isBlank(newPassword2)) {
             map.put("newPasswordMsg", "新密码不能为空！");
+            return map;
+        }
+        if(newPassword1.length()<8){
+            map.put("newPasswordMsg", "新密码不能少于8位！");
             return map;
         }
         if(!newPassword1.equals(newPassword2)){

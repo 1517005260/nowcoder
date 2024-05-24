@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.entity.Event;
 import com.nowcoder.community.entity.Message;
+import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.DiscussPostService;
 import com.nowcoder.community.service.ElasticsearchService;
 import com.nowcoder.community.service.MessageService;
+import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
 import com.qiniu.common.QiniuException;
@@ -63,6 +65,9 @@ public class EventConsumer implements CommunityConstant {
 
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler;
+
+    @Autowired
+    private UserService userService;
 
 
     // 由于三个消息通知格式类似，所以写一个方法就行
@@ -131,6 +136,20 @@ public class EventConsumer implements CommunityConstant {
         }
 
         elasticsearchService.deleteDiscussPost(event.getEntityId());
+    }
+
+    // 消费用户事件
+    @KafkaListener(topics = {TOPIC_REGISTER, TOPIC_UPDATE})
+    public void handleUserMessage(ConsumerRecord record){
+        if(record == null || record.value() == null){
+            logger.error("消息的内容为空！");
+        }
+        Event event = JSONObject.parseObject(record.value().toString(), Event.class);
+        if(event == null){
+            logger.error("消息格式错误！");
+        }
+        User user = userService.findUserById(event.getUserId());
+        elasticsearchService.saveUser(user);
     }
 
     // 消费分享事件

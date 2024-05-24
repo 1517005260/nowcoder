@@ -2,6 +2,7 @@ package com.nowcoder.community.controller;
 
 import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.entity.Page;
+import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.ElasticsearchService;
 import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
@@ -36,7 +37,7 @@ public class SearchController implements CommunityConstant {
         // 搜索帖子
         // page的current从1开始但是本方法要求从0开始
         org.springframework.data.domain.Page<DiscussPost> searchResult =
-        elasticsearchService.searchDiscussPost(keyword, page.getCurrent() - 1, page.getLimit());
+                elasticsearchService.searchDiscussPost(keyword, page.getCurrent() - 1, page.getLimit());
 
         List<Map<String, Object>> discussPosts = new ArrayList<>();
         if(searchResult != null){
@@ -57,5 +58,35 @@ public class SearchController implements CommunityConstant {
         page.setRows(searchResult == null ? 0 : (int)searchResult.getTotalElements());
 
         return "/site/search";
+    }
+
+    @RequestMapping(path = "/searchUser", method = RequestMethod.GET)
+    public String searchUser(String username, Page page, Model model){
+        // 搜索用户
+        org.springframework.data.domain.Page<User> searchResult =
+                elasticsearchService.searchUser(username, page.getCurrent() - 1, page.getLimit());
+
+        List<Map<String, Object>> Users = new ArrayList<>();
+        if(searchResult != null){
+            for(User user : searchResult){
+                Map<String, Object> map = new HashMap<>();
+
+                map.put("user", user);
+                map.put("uid", user.getId());
+                map.put("username", user.getUsername());
+                map.put("headerUrl", user.getHeaderUrl());
+                map.put("createTime", user.getCreateTime());
+                map.put("type", user.getType());
+
+                Users.add(map);
+            }
+        }
+        model.addAttribute("Users", Users);
+        model.addAttribute("name", username);
+
+        page.setPath("/searchUser?name=" + username);
+        page.setRows(searchResult == null ? 0 : (int)searchResult.getTotalElements());
+
+        return "/site/searchUser";
     }
 }

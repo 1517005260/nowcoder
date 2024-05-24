@@ -30,7 +30,7 @@
 							<a class="nav-link position-relative" th:href="@{/letter/list}">消息<span class="badge badge-danger" th:text="${allUnreadCount!=0?allUnreadCount:''}">12</span></a>
 						</li>
 						<li class="nav-item ml-3 btn-group-vertical" sec:authorize="hasAnyAuthority('admin')">
-							<a class="nav-link" th:href="@{/data}">网站数据统计</a>
+							<a class="nav-link" th:href="@{/data}">统计</a>
 						</li>
 						<li class="nav-item ml-3 btn-group-vertical" th:if="${loginUser==null}">
 							<a class="nav-link" th:href="@{/register}">注册</a>
@@ -56,59 +56,16 @@
 							</a>
 						</li>
 					</ul>
-					<!-- 搜索 -->
-					<form class="form-inline my-2 my-lg-0" th:action="@{/search}" method="get" onsubmit="return validateForm()">
-						<input class="form-control mr-sm-2" type="search" aria-label="Search" name="keyword" id="keyword" th:value="${keyword}" />
-						<button class="btn btn-outline-light my-2 my-sm-0" type="submit">搜索帖子</button>
+					<!-- 搜索帖子 -->
+					<form class="form-inline my-2 my-lg-0" th:action="@{/search}" method="get">
+						<input class="form-control mr-sm-2 short-search" type="search" aria-label="Search" name="keyword" id="keyword" th:value="${keyword}" required style="width: 135px;"/>
+						<button class="btn btn-outline-light my-2 my-sm-0" type="submit">搜帖子</button>
 					</form>
-					<div id="alert-box" style="position: fixed;
-			top: -100px; /* 初始位置在视线外 */
-			left: 50%;
-			transform: translateX(-50%);
-			background-color: #ffffff; /* 白色背景 */
-			color: #000000; /* 黑色文字 */
-			padding: 20px; /* 内边距 */
-			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 盒阴影 */
-			border: 1px solid #dddddd; /* 边框 */
-			border-radius: 5px; /* 圆角 */
-			transition: top 0.5s ease; /* 仅平滑移动 */
-			opacity: 1; /* 初始完全不透明 */
-			z-index: 1000; /* 确保提示框在最前 */
-			flex-direction: column;
-			align-items: center;display: none;">
-						<h3 style="margin-top: 0;
-			margin-bottom: 10px;
-			font-size: 18px;">提示</h3>
-						<p id="alert-message" style="margin: 0;"></p>
-					</div>
-					<script>
-						function validateForm() {
-							var keyword = document.getElementById("keyword").value;
-							if (keyword.trim() === "") {
-								showAlert("搜索关键词不能为空！");
-								return false;
-							}
-							return true;
-						}
-
-						function showAlert(message) {
-							var alertBox = document.getElementById("alert-box");
-							var alertMessage = document.getElementById("alert-message");
-							alertMessage.textContent = message;
-							alertBox.style.display = 'flex';
-							alertBox.style.top = '20px'; // 直接划入视线
-
-							setTimeout(function() {
-								alertBox.style.opacity = '0'; // 1.5秒后淡出
-							}, 1500);
-
-							setTimeout(function() {
-								alertBox.style.display = 'none'; // 淡出后隐藏
-								alertBox.style.top = '-100px'; // 重置位置
-								alertBox.style.opacity = '1'; // 重置透明度
-							}, 4000);
-						}
-					</script>
+					<!--搜索用户-->
+					<form class="form-inline my-2 my-lg-0" th:action="@{/searchUser}" method="get">
+						<input class="form-control mr-sm-2 short-search" type="search" aria-label="Search" name="username" id="username" th:value="${name}" required style="width: 135px;margin-left: 10px;"/>
+						<button class="btn btn-outline-light my-2 my-sm-0" type="submit">找用户</button>
+					</form>
 				</div>
 			</nav>
 		</div>

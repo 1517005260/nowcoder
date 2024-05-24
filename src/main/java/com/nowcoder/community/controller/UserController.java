@@ -1,7 +1,9 @@
 package com.nowcoder.community.controller;
 
 import com.nowcoder.community.annotation.LoginRequired;
+import com.nowcoder.community.entity.Event;
 import com.nowcoder.community.entity.User;
+import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.service.FollowService;
 import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
@@ -69,6 +71,9 @@ public class UserController implements CommunityConstant {
     @Value("${qiniu.bucket.header.url}")
     private String headerBucketUrl;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     @LoginRequired
     @RequestMapping(path = "/setting", method = RequestMethod.GET)
     public String getSettingPage(Model model){
@@ -95,6 +100,12 @@ public class UserController implements CommunityConstant {
         }
         String url = headerBucketUrl + "/" + fileName;
         userService.updateHeader(hostHolder.getUser().getId(), url);
+
+        Event event = new Event()
+                .setTopic(TOPIC_UPDATE)
+                .setUserId(hostHolder.getUser().getId());
+        eventProducer.fireEvent(event);
+
         return CommunityUtil.getJSONString(0);
     }
 
@@ -118,6 +129,10 @@ public class UserController implements CommunityConstant {
         User user = hostHolder.getUser();
         Map<String, Object> map = userService.updateUsername(user.getId(), username);
         if (map == null || map.isEmpty()) {
+            Event event = new Event()
+                    .setTopic(TOPIC_UPDATE)
+                    .setUserId(user.getId());
+            eventProducer.fireEvent(event);
             return "redirect:/logout";
         } else {
             model.addAttribute("errorMsg", map.get("errorMsg"));

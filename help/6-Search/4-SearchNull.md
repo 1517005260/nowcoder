@@ -33,3 +33,25 @@ search.html:
 ```
 
 2. noResult图片来自B站，本人在此声明仅供学习使用，不用于盈利目的
+
+3. 补充：关注列表也可能为空，遂修改：
+
+follower.html:
+
+```html
+<!--判空-->
+<div th:if="${#lists.isEmpty(users)}">
+    <img th:src="@{/img/noResult.png}" alt="无搜索结果" class="img-fluid mx-auto d-block mt-4">
+    <p class="text-center mt-3">这里还没有数据呢~ 快去论坛里和大家互动吧！</p>
+</div>
+```
+
+followee.html:
+
+```html
+<!--判空-->
+<div th:if="${#lists.isEmpty(users)}">
+    <img th:src="@{/img/noResult.png}" alt="无搜索结果" class="img-fluid mx-auto d-block mt-4">
+    <p class="text-center mt-3">这里还没有数据呢~ 快去论坛里和大家互动吧！</p>
+</div>
+```

@@ -1,7 +1,9 @@
 package com.nowcoder.community.controller;
 
 import com.google.code.kaptcha.Producer;
+import com.nowcoder.community.entity.Event;
 import com.nowcoder.community.entity.User;
+import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
@@ -48,6 +50,9 @@ public class LoginController implements CommunityConstant {
     @Autowired
     private SecurityContextLogoutHandler securityContextLogoutHandler;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     private static final Logger logger =  LoggerFactory.getLogger(LoginController.class);
 
     @RequestMapping(path = "/register", method = RequestMethod.GET)
@@ -84,6 +89,11 @@ public class LoginController implements CommunityConstant {
         if(result == ACTIVATION_SUCCESS){
             model.addAttribute("msg", "激活成功，您的账号已经可以正常使用了！");
             model.addAttribute("target", "/login");
+
+            Event event = new Event()
+                    .setTopic(TOPIC_REGISTER)
+                    .setUserId(userId);
+            eventProducer.fireEvent(event);
         } else if (result == ACTIVATION_REPEAT) {
             model.addAttribute("msg", "重复激活！");
             model.addAttribute("target", "/index");

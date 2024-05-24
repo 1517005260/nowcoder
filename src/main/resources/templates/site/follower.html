@@ -31,7 +31,11 @@
 					</ul>
 					<a th:href="@{|/user/profile/${user.id}|}" class="text-muted position-absolute rt-0">返回个人主页&gt;</a>
 				</div>
-				
+				<!--判空-->
+				<div th:if="${#lists.isEmpty(users)}">
+					<img th:src="@{/img/noResult.png}" alt="无搜索结果" class="img-fluid mx-auto d-block mt-4">
+					<p class="text-center mt-3">这里还没有数据呢~ 快去论坛里和大家互动吧！</p>
+				</div>
 				<!-- 粉丝列表 -->
 				<ul class="list-unstyled">
 					<li class="media pb-3 pt-3 mb-3 border-bottom position-relative" th:each="map:${users}">
