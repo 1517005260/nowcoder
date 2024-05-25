@@ -541,3 +541,95 @@ public String getMyLikes(@PathVariable("userId") int userId, Page page, Model mo
     <a class="nav-link" th:href="@{|/user/mylikes/${user.id}|}" th:text="${loginUser==null||loginUser.id!=user.id?'TA赞过的':'我赞过的'}"></a>
 </li>
 ```
+
+## BUG —— Redis和MySQl的数据不一致问题
+
+当用户A对帖子a点赞时，a加入了redis，记redis中为a1，这时的帖子相当于锁死了，当我们对帖子进行点赞、删除、加精时，帖子的属性会有变化，记为a2，那么显然 a1≠a2，我们需要修复这个bug
+
+### 思路——重构redisKey，改为存帖子id而非帖子，之后根据id实时更新数据
+
+1. redisKey重构：
+
+```java
+// 某个用户赞了的帖子
+    // like:post:userid -> Zset(postId, likeTime)
+    public static String getUserPostKey(int userId){
+        return PREFIX_LIKE_POST + SPLIT + userId;
+    }
+```
+
+2. likeService改动：
+
+```java
+if(isMember){
+    operations.opsForSet().remove(entityLikeKey, userId);
+    operations.opsForValue().decrement(userLikeKey);
+    if (entityType == ENTITY_TYPE_POST) {
+        DiscussPost post = discussPostService.findDiscussPostById(entityId);
+        operations.opsForZSet().remove(userPostKey, post.getId());
+    }
+}else{
+    operations.opsForSet().add(entityLikeKey, userId);
+    operations.opsForValue().increment(userLikeKey);
+    if (entityType == ENTITY_TYPE_POST) {
+        DiscussPost post = discussPostService.findDiscussPostById(entityId);
+        operations.opsForZSet().add(userPostKey, post.getId(), System.currentTimeMillis());
+    }
+}
+
+// 查询一个用户点过赞的帖子
+public List<DiscussPost> findUserLikePosts(int userId) {
+    String redisKey = RedisKeyUtil.getUserPostKey(userId);
+
+    // 获取存储在redis ZSet中的帖子ID，按score降序排列
+    Set<String> postIds = redisTemplate.opsForZSet().reverseRange(redisKey, 0, -1);
+    if (postIds == null) {
+        return null;
+    }
+
+    // 根据帖子ID从数据库获取帖子详情
+    List<DiscussPost> likePosts = new ArrayList<>();
+    for (String postId : postIds) {
+        DiscussPost post = discussPostService.findDiscussPostById(Integer.parseInt(postId));
+        if (post != null && post.getStatus() != 2) {
+            likePosts.add(post);
+        }
+    }
+
+    return likePosts;
+}
+```
+
+3. UserController改动：
+
+```java
+@RequestMapping(path = "/mylikes/{userId}", method = RequestMethod.GET)
+public String getMyLikes(@PathVariable("userId") int userId, Page page, Model model) {
+    User user = userService.findUserById(userId);
+    if (user == null) {
+        throw new RuntimeException("该用户不存在！");
+    }
+    model.addAttribute("user", user);
+
+    // 获取用户点赞的帖子列表
+    List<DiscussPost> discussList = likeService.findUserLikePosts(userId);
+
+    // 分页信息
+    page.setLimit(10);
+    page.setPath("/user/mylikes/" + userId);
+    page.setRows(discussList.size());
+
+    List<Map<String, Object>> discussVOList = new ArrayList<>();
+    if (discussList != null) {
+        for (DiscussPost post : discussList) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("discussPost", post);
+            map.put("likeCount", likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId()));
+            discussVOList.add(map);
+        }
+    }
+    model.addAttribute("discussPosts", discussVOList);
+
+    return "/site/my-likes";
+}
+```

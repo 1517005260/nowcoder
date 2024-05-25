@@ -44,14 +44,15 @@ public class LikeService implements CommunityConstant {
                     operations.opsForSet().remove(entityLikeKey, userId);
                     operations.opsForValue().decrement(userLikeKey);
                     if (entityType == ENTITY_TYPE_POST) {
-                        operations.opsForZSet().remove(userPostKey, discussPostService.findDiscussPostById(entityId));
+                        DiscussPost post = discussPostService.findDiscussPostById(entityId);
+                        operations.opsForZSet().remove(userPostKey, String.valueOf(post.getId()));
                     }
                 }else{
                     operations.opsForSet().add(entityLikeKey, userId);
                     operations.opsForValue().increment(userLikeKey);
                     if (entityType == ENTITY_TYPE_POST) {
                         DiscussPost post = discussPostService.findDiscussPostById(entityId);
-                        operations.opsForZSet().add(userPostKey, post, System.currentTimeMillis());
+                        operations.opsForZSet().add(userPostKey, String.valueOf(post.getId()), System.currentTimeMillis());
                     }
                 }
 
@@ -83,16 +84,19 @@ public class LikeService implements CommunityConstant {
     public List<DiscussPost> findUserLikePosts(int userId) {
         String redisKey = RedisKeyUtil.getUserPostKey(userId);
 
-        // 获取存储在redis ZSet中的DiscussPost对象，按score降序排列
-        Set<DiscussPost> posts = redisTemplate.opsForZSet().reverseRange(redisKey, 0, -1);
-        if(posts == null){
+        // 获取存储在redis ZSet中的帖子ID，按score降序排列
+        Set<String> postIds = redisTemplate.opsForZSet().reverseRange(redisKey, 0, -1);
+        if (postIds == null) {
             return null;
         }
 
-        // 将结果转换为List
+        // 根据帖子ID从数据库获取帖子详情
         List<DiscussPost> likePosts = new ArrayList<>();
-        if (posts != null) {
-            likePosts.addAll(posts);
+        for (String postId : postIds) {
+            DiscussPost post = discussPostService.findDiscussPostById(Integer.parseInt(postId));
+            if (post != null && post.getStatus() != 2) {
+                likePosts.add(post);
+            }
         }
 
         return likePosts;

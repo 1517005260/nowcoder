@@ -81,18 +81,21 @@
 				</div>
 				<div class="d-flex justify-content-center mt-3">
 					<button type="button" class="btn btn-sm"
+							th:if="${loginUser!=null}"
 							th:classappend="${user.type == 0 ? 'btn-secondary' : 'btn-primary'}"
 							th:text="${user.type == 0 ? '普通用户' : '改为普通用户'}"
 							th:disabled="${user.type == 0}"
 							th:onclick="|updateUserType(${user.id}, ${user.type}, 0)|"
 							sec:authorize="hasAnyAuthority('admin')">普通用户</button>
 					<button type="button" class="btn btn-sm ml-2"
+							th:if="${loginUser!=null}"
 							th:classappend="${user.type == 2 ? 'btn-secondary' : 'btn-primary'}"
 							th:text="${user.type == 2 ? '版主' : '改为版主'}"
 							th:disabled="${user.type == 2}"
 							th:onclick="|updateUserType(${user.id},${user.type} ,2)|"
 							sec:authorize="hasAnyAuthority('admin')">版主</button>
 					<button type="button" class="btn btn-sm ml-2"
+							th:if="${loginUser!=null}"
 							th:classappend="${user.type == 1 ? 'btn-secondary' : 'btn-primary'}"
 							th:text="${user.type == 1 ? '管理员' : '改为管理员'}"
 							th:disabled="${user.type == 1}"

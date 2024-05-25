@@ -9,8 +9,6 @@ import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
-import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +19,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -246,7 +238,9 @@ public class UserController implements CommunityConstant {
         }
         model.addAttribute("user", user);
 
+        // 获取用户点赞的帖子列表
         List<DiscussPost> discussList = likeService.findUserLikePosts(userId);
+
         // 分页信息
         page.setLimit(10);
         page.setPath("/user/mylikes/" + userId);

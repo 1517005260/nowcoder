@@ -32,7 +32,7 @@ public class RedisKeyUtil {
     }
 
     // 某个用户赞了的帖子
-    // like:post:userid -> Zset(post, likeTime)
+    // like:post:userid -> Zset(postId, likeTime)
     public static String getUserPostKey(int userId){
         return PREFIX_LIKE_POST + SPLIT + userId;
     }
