@@ -41,4 +41,29 @@
         where id = #{id}
     </select>
 
+    <select id="selectCommentsByUser" resultType="Comment">
+        select <include refid="selectFields"></include>
+        from comment
+        where status != 1
+        and user_id = #{userId}
+        and entity_type = 1
+        and exists (
+        select id from discuss_post where id = comment.entity_id and status != 2
+        )
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+
+    <select id="selectCountByUser" resultType="int">
+        select count(id)
+        from comment
+        where status != 1
+          and user_id = #{userId}
+          and entity_type = 1    <!-- 对帖子评论才查 -->
+          and exists (select id
+                      from discuss_post
+                      where id = comment.entity_id and status != 2)  <!--并且帖子没被删除-->
+    </select>
+
 </mapper>

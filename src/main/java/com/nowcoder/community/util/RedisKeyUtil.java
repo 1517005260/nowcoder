@@ -8,6 +8,7 @@ public class RedisKeyUtil {
     private static final String PREFIX_ENTITY_LIKE = "like:entity";
 
     private static final String PREFIX_USER_LIKE = "like:user";
+    private static final String PREFIX_LIKE_POST = "like:post";
 
     private static final String PREFIX_FOLLOWEE = "followee";
     private static final String PREFIX_FOLLOWER = "follower";
@@ -28,6 +29,12 @@ public class RedisKeyUtil {
     // like:user:userId -> int
     public static String getUserLikeKey(int userId){
         return PREFIX_USER_LIKE + SPLIT + userId;
+    }
+
+    // 某个用户赞了的帖子
+    // like:post:userid -> Zset(post, likeTime)
+    public static String getUserPostKey(int userId){
+        return PREFIX_LIKE_POST + SPLIT + userId;
     }
 
     // 关注：双份数据

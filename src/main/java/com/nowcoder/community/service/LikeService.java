@@ -1,5 +1,7 @@
 package com.nowcoder.community.service;
 
+import com.nowcoder.community.entity.DiscussPost;
+import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -8,10 +10,18 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
-public class LikeService {
+public class LikeService implements CommunityConstant {
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private DiscussPostService discussPostService;
 
     // 点赞
     public void like(int userId, int entityType, int entityId, int entityUserId){
@@ -24,6 +34,7 @@ public class LikeService {
                 // 但是我们不能直接用entity找作者。1. 还要区分type，麻烦 2. 还要访问数据库，违背了redis高效的初衷
                 // 因此，我们重构原方法的传参，把实体作者传进来
                 String userLikeKey = RedisKeyUtil.getUserLikeKey(entityUserId);
+                String userPostKey = RedisKeyUtil.getUserPostKey(userId);
 
                 boolean isMember = operations.opsForSet().isMember(entityLikeKey, userId);  // 查询放在事务之外
 
@@ -32,9 +43,16 @@ public class LikeService {
                 if(isMember){
                     operations.opsForSet().remove(entityLikeKey, userId);
                     operations.opsForValue().decrement(userLikeKey);
+                    if (entityType == ENTITY_TYPE_POST) {
+                        operations.opsForZSet().remove(userPostKey, discussPostService.findDiscussPostById(entityId));
+                    }
                 }else{
                     operations.opsForSet().add(entityLikeKey, userId);
                     operations.opsForValue().increment(userLikeKey);
+                    if (entityType == ENTITY_TYPE_POST) {
+                        DiscussPost post = discussPostService.findDiscussPostById(entityId);
+                        operations.opsForZSet().add(userPostKey, post, System.currentTimeMillis());
+                    }
                 }
 
                 return operations.exec();
@@ -59,5 +77,24 @@ public class LikeService {
         String userLikeKey = RedisKeyUtil.getUserLikeKey(userId);
         Integer count = (Integer)redisTemplate.opsForValue().get(userLikeKey);
         return count == null ? 0 : count.intValue();
+    }
+
+    // 查询一个用户点过赞的帖子
+    public List<DiscussPost> findUserLikePosts(int userId) {
+        String redisKey = RedisKeyUtil.getUserPostKey(userId);
+
+        // 获取存储在redis ZSet中的DiscussPost对象，按score降序排列
+        Set<DiscussPost> posts = redisTemplate.opsForZSet().reverseRange(redisKey, 0, -1);
+        if(posts == null){
+            return null;
+        }
+
+        // 将结果转换为List
+        List<DiscussPost> likePosts = new ArrayList<>();
+        if (posts != null) {
+            likePosts.addAll(posts);
+        }
+
+        return likePosts;
     }
 }
