@@ -265,4 +265,24 @@ public class UserController implements CommunityConstant {
 
         return "/site/my-likes";
     }
+
+    @RequestMapping(path = "/updatetype", method = RequestMethod.POST)
+    @ResponseBody
+    public String updateUserType(int oldType, int newType, int userId){
+        User user = hostHolder.getUser();
+        if(user == null){
+            return CommunityUtil.getJSONString(1, "您还未登录！");
+        }
+        if(oldType == 1){
+            // 已经是管理员了
+            return CommunityUtil.getJSONString(1, "无法修改管理员的权限！");
+        }
+
+        userService.updateUserType(userId, newType);
+        Event event = new Event()
+                .setUserId(userId)
+                .setTopic(TOPIC_UPDATE);
+        eventProducer.fireEvent(event);
+        return CommunityUtil.getJSONString(0, "修改用户权限成功！");
+    }
 }

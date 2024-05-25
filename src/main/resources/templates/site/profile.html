@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -60,10 +60,30 @@
 							<span class="ml-4">关注者 <a class="text-primary" th:href="@{|/followers/${user.id}|}" th:text="${followerCount}">123</a> 人</span>
 							<span class="ml-4">获得了 <i class="text-danger" th:text="${likeCount}">87</i> 个赞</span>
 						</div>
+						<div>
+							<button type="button" class="btn btn-sm"
+									th:classappend="${user.type == 0 ? 'btn-secondary' : 'btn-primary'}"
+									th:text="${user.type == 0 ? '普通用户' : '改为普通用户'}"
+									th:disabled="${user.type == 0}"
+									th:onclick="|updateUserType(${user.id}, ${user.type}, 0)|"
+									sec:authorize="hasAnyAuthority('admin')">普通用户</button>
+							<button type="button" class="btn btn-sm"
+									th:classappend="${user.type == 2 ? 'btn-secondary' : 'btn-primary'}"
+									th:text="${user.type == 2 ? '版主' : '改为版主'}"
+									th:disabled="${user.type == 2}"
+									th:onclick="|updateUserType(${user.id},${user.type} ,2)|"
+									sec:authorize="hasAnyAuthority('admin')">版主</button>
+							<button type="button" class="btn btn-sm"
+									th:classappend="${user.type == 1 ? 'btn-secondary' : 'btn-primary'}"
+									th:text="${user.type == 1 ? '管理员' : '改为管理员'}"
+									th:disabled="${user.type == 1}"
+									th:onclick="|updateUserType(${user.id},${user.type}, 1)|"
+									sec:authorize="hasAnyAuthority('admin')">管理员</button>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+			</div>
 
 		<!-- 尾部 -->
 		<footer class="bg-dark" th:replace="index::footer">
@@ -75,5 +95,28 @@
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 	<script th:src="@{/js/global.js}"></script>
 	<script th:src="@{/js/profile.js}"></script>
+	<script>
+		function updateUserType(userId, oldType, newType) {
+			let token = $("meta[name= '_csrf']").attr("content");
+			let header = $("meta[name= '_csrf_header']").attr("content");
+			$(document).ajaxSend(function (e, xhr, options) {
+				xhr.setRequestHeader(header, token);
+			});
+
+			$.post(
+					CONTEXT_PATH + "/user/updatetype",
+					{"oldType":oldType,"newType":newType,"userId":userId},
+					function (data){
+						data = $.parseJSON(data);
+						if(data.code == 0){
+							window.location.reload();
+						}else{
+							alert("修改失败！");
+						}
+					}
+			)
+		}
+
+	</script>
 </body>
 </html>

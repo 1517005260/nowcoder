@@ -236,6 +236,11 @@ public class UserService implements CommunityConstant {
         return map;
     }
 
+    public void updateUserType(int userId, int type){
+        userMapper.updateType(userId, type);
+        clearCache(userId);
+    }
+
     // 用户名查用户
     public User findUserByName(String username){
         return userMapper.selectByName(username);
