@@ -59,8 +59,8 @@
 							<span class="status-badge" th:if="${user.type==0}">普通用户</span>
 							<span class="status-badge" th:if="${user.type==1}">管理员</span>
 							<span class="status-badge" th:if="${user.type==2}">版主</span>
-							<input type="hidden" id="entityId" th:value="${user.id}">
 							<span style="position:absolute;left: 1000px">
+								<input type="hidden" id="entityId" th:value="${user.id}">
 								<button type="button"
 										th:class="|btn ${hasFollowed?'btn-secondary':'btn-info'} btn-sm follow-btn|"
 										th:text="${hasFollowed?'已关注':'关注TA'}"

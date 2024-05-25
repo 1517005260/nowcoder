@@ -11,6 +11,9 @@ import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,7 +56,7 @@ public class MessageController implements CommunityConstant {
                 Map<String, Object> map = new HashMap<>();
                 map.put("conversation", message);  // 和某个用户所有的对话
                 map.put("letterCount", messageService.  // 私信总数量
-                        findLetterCount(message.getConversationId()));
+                        findLetterCount(hostHolder.getUser().getId(), message.getConversationId()));
                 map.put("unreadCount", messageService.  // 该对话的未读消息
                         findLetterUnreadCount(user.getId(), message.getConversationId()));
                 int targetId = user.getId() == message.getFromId() ?
@@ -82,10 +85,10 @@ public class MessageController implements CommunityConstant {
         // 分页信息设置
         page.setLimit(5);
         page.setPath("/letter/detail/" + conversationId);
-        page.setRows(messageService.findLetterCount(conversationId));
+        page.setRows(messageService.findLetterCount(hostHolder.getUser().getId(), conversationId));
 
         // 和某个用户的所有对话记录
-        List<Message> letterList =  messageService.findLetters(conversationId, page.getOffset(), page.getLimit());
+        List<Message> letterList =  messageService.findLetters(hostHolder.getUser().getId(),conversationId, page.getOffset(), page.getLimit());
         List<Map<String, Object>> letters = new ArrayList<>();
         if(letterList != null){
             for(Message message : letterList){
@@ -138,21 +141,21 @@ public class MessageController implements CommunityConstant {
     // 发送私信
     @RequestMapping(path = "/letter/send", method = RequestMethod.POST)
     @ResponseBody
-    public String sendLetter(String toName, String content){
+    public String sendLetter(String toName, String content) {
         User target = userService.findUserByName(toName);
-        if(target == null){
+        if (target == null) {
             return CommunityUtil.getJSONString(400, "目标用户不存在！");
         }
-        if(content == null || content.trim().isEmpty()){
-            return CommunityUtil.getJSONString(400,"发送内容不能为空！");
+        if (content == null || content.trim().isEmpty()) {
+            return CommunityUtil.getJSONString(400, "发送内容不能为空！");
         }
 
         Message message = new Message();
         message.setFromId(hostHolder.getUser().getId());
         message.setToId(target.getId());
-        if(message.getFromId() < message.getToId()){
+        if (message.getFromId() < message.getToId()) {
             message.setConversationId(message.getFromId() + "_" + message.getToId());
-        }else{
+        } else {
             message.setConversationId(message.getToId() + "_" + message.getFromId());
         }
         message.setContent(content);
@@ -160,7 +163,7 @@ public class MessageController implements CommunityConstant {
         message.setCreateTime(new Date());
 
         messageService.addMessage(message);
-        return CommunityUtil.getJSONString(0);  //success
+        return CommunityUtil.getJSONString(0); // success
     }
 
     @RequestMapping(path = "/notice/list", method = RequestMethod.GET)
@@ -282,7 +285,7 @@ public class MessageController implements CommunityConstant {
     @RequestMapping(path = "/letter/delete", method = RequestMethod.POST)
     @ResponseBody
     public String deleteLetter(int id) {
-        messageService.deleteMessage(id);
+        messageService.deleteMessage(hostHolder.getUser().getId(), id);
         return CommunityUtil.getJSONString(0);
     }
 
@@ -290,7 +293,7 @@ public class MessageController implements CommunityConstant {
     @RequestMapping(path = "/notice/delete", method = RequestMethod.POST)
     @ResponseBody
     public String deleteNotice(int id) {
-        messageService.deleteMessage(id);
+        messageService.deleteNotice(id);
         return CommunityUtil.getJSONString(0);
     }
 }

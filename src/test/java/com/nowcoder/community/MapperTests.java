@@ -115,12 +115,12 @@ public class MapperTests {
         int cnt = messageMapper.selectConversationCount(111);
         System.out.println(cnt);
 
-        list = messageMapper.selectLetters("111_112", 0, 10);
+        list = messageMapper.selectLetters(111,"111_112", 0, 10);
         for(Message message : list){
             System.out.println(message);
         }
 
-        cnt = messageMapper.selectLetterCount("111_112");
+        cnt = messageMapper.selectLetterCount(111,"111_112");
         System.out.println(cnt);
 
         cnt = messageMapper.selectLetterUnreadCount(131, "111_131");

@@ -14,10 +14,10 @@ public interface MessageMapper {
     int selectConversationCount(int userId);
 
     // 私信详情：查询某个会话所包含的所有消息
-    List<Message> selectLetters(String conversationId, int offset, int limit);
+    List<Message> selectLetters(int userId, String conversationId, int offset, int limit);
 
     // 查询某个会话所包含的消息数量
-    int selectLetterCount(String conversationId);
+    int selectLetterCount(int userId, String conversationId);
 
     // 查询用户未读消息数量（列表页和详情页共用一个查询，需要动态拼接）
     int selectLetterUnreadCount(int userId, String conversationId);
@@ -25,8 +25,12 @@ public interface MessageMapper {
     // 新增消息
     int insertMessage(Message message);
 
-    // 对于多个消息一起设置 已读/删除
+    // 对于多个消息一起设置 已读
     int updateStatus(List<Integer> ids, int status);
+
+    // 删除对话消息（通知用之前的无影响，故只要重新写delete即可）
+    int deleteMessage(int userId, List<Integer> messageIds, int status);
+    int insertUserMessageStatus(int userId, int messageId, int status);
 
     // 某个主题下最新的通知
     Message selectLatestNotice(int userId, String topic);
