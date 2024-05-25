@@ -30,6 +30,7 @@ public class SecurityConfig implements CommunityConstant {
                         "/user/setting",  // 用户设置
                         "/user/upload",   // 上传头像
                         "/user/updatePassword",  // 修改密码
+                        "/user/updateUsername", // 修改名字
                         "/discuss/add",   // 上传帖子
                         "/comment/add/**", // 评论
                         "/letter/**",     // 私信

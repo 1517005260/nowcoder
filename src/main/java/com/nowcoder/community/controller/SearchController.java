@@ -4,9 +4,11 @@ import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.ElasticsearchService;
+import com.nowcoder.community.service.FollowService;
 import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstant;
+import com.nowcoder.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,6 +32,12 @@ public class SearchController implements CommunityConstant {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private FollowService followService;
+
+    @Autowired
+    private HostHolder hostHolder;
 
     // 路径格式：/search?keyword=xxx
     @RequestMapping(path = "/search", method = RequestMethod.GET)
@@ -78,11 +86,21 @@ public class SearchController implements CommunityConstant {
                 map.put("createTime", user.getCreateTime());
                 map.put("type", user.getType());
 
+                map.put("likeCount", likeService.findUserLikeCount(user.getId()));
+                map.put("followers", followService.findFollowerCount(ENTITY_TYPE_USER, user.getId()));
+
+                boolean hasFollowed = false;
+                if(hostHolder.getUser() != null){
+                    hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(), ENTITY_TYPE_USER, user.getId());
+                }
+                map.put("hasFollowed", hasFollowed);
+
                 Users.add(map);
             }
         }
         model.addAttribute("Users", Users);
         model.addAttribute("name", username);
+        model.addAttribute("hostUser", hostHolder.getUser());
 
         page.setPath("/searchUser?name=" + username);
         page.setRows(searchResult == null ? 0 : (int)searchResult.getTotalElements());

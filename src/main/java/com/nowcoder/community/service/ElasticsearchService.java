@@ -4,6 +4,8 @@ import com.nowcoder.community.dao.elasticsearch.DiscussPostRepository;
 import com.nowcoder.community.dao.elasticsearch.UserRepository;
 import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.entity.User;
+import org.elasticsearch.index.query.Operator;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -54,6 +56,11 @@ public class ElasticsearchService {
 
     // 搜索，可以复用上次的test代码
     public Page<DiscussPost> searchDiscussPost(String keyword, int current, int limit) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            // 处理空关键字的情况，例如返回空结果
+            return new PageImpl<>(new ArrayList<>(), PageRequest.of(current, limit), 0);
+        }
+
         // 使用 wildcard 查询进行模糊匹配
         String wildcardKeyword = "*" + keyword + "*";
         Criteria criteria = new Criteria("title").expression(wildcardKeyword)
@@ -103,7 +110,12 @@ public class ElasticsearchService {
         return new PageImpl<>(discussPostList, PageRequest.of(current, limit), result.getTotalHits());
     }
 
-    public Page<User> searchUser(String keyword, int current, int limit){
+    public Page<User> searchUser(String keyword, int current, int limit) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            // 处理空关键字的情况，例如返回空结果
+            return new PageImpl<>(new ArrayList<>(), PageRequest.of(current, limit), 0);
+        }
+
         String wildcardKeyword = "*" + keyword + "*";
         Criteria criteria = new Criteria("username").expression(wildcardKeyword);
 
@@ -121,7 +133,7 @@ public class ElasticsearchService {
         CriteriaQuery query = new CriteriaQuery(builder);
 
         SearchHits<User> result = elasticTemplate.search(query, User.class);
-        if(result.isEmpty()){
+        if (result.isEmpty()) {
             return null;
         }
 
