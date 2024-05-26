@@ -207,6 +207,7 @@ and ums.user_id = #{userId}
 select count(id)
 from message
 where status = 0
+and from_id != 1
 and to_id = #{userId}
 <if test="conversationId != null">
     and conversation_id = #{conversationId}

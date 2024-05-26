@@ -14,10 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.*;
 
@@ -45,6 +43,11 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @RequestMapping(path = "/publish", method = RequestMethod.GET)
+    public String getPublishPage(Model model){
+        return "/site/publish-posts";
+    }
+
     //处理增加帖子异步请求
     @RequestMapping(path = "/add", method = RequestMethod.POST)
     @ResponseBody
@@ -52,12 +55,6 @@ public class DiscussPostController implements CommunityConstant {
         User user = hostHolder.getUser();
         if(user == null){
             return CommunityUtil.getJSONString(403, "你还没有登录哦!");  // 403表示没有权限
-        }
-        if (title == null || title.trim().isEmpty()) {
-            return CommunityUtil.getJSONString(400, "标题不能为空！");  // 400表示请求错误
-        }
-        if (content == null || content.trim().isEmpty()) {
-            return CommunityUtil.getJSONString(400, "内容不能为空！");
         }
         DiscussPost discussPost = new DiscussPost();
         discussPost.setUserId(user.getId());
@@ -86,6 +83,8 @@ public class DiscussPostController implements CommunityConstant {
     public String getDiscussPost(@PathVariable("discussPostId") int discussPostId, Model model, Page page){
         //帖子
         DiscussPost discussPost = discussPostService.findDiscussPostById(discussPostId);
+        String content = HtmlUtils.htmlUnescape(discussPost.getContent()); // 内容反转义，不然 markdown 格式无法显示
+        discussPost.setContent(content);
         model.addAttribute("post", discussPost);
 
         //作者

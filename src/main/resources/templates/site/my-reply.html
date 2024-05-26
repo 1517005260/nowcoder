@@ -50,9 +50,11 @@
 						<div class="font-size-16 text-info">
 							<a th:href="@{|/discuss/detail/${map.discussPost.id}|}" th:utext="${map.discussPost.title}" class="text-info">备战春招，面试刷题跟他复习，一个月全搞定！</a>
 						</div>
+						<a th:href="@{|/discuss/detail/${map.discussPost.id}|}">
 						<div class="mt-1 font-size-14" th:utext="${map.comment.content}">
 							顶顶顶!
 						</div>
+						</a>
 						<div class="text-right font-size-12 text-muted">
 							回复于 <b th:text="${#dates.format(map.comment.createTime,'yyyy-MM-dd HH:mm:ss')}">2019-04-15 10:10:10</b>
 						</div>

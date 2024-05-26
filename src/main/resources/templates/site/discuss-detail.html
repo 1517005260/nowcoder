@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
 	<link rel="stylesheet" th:href="@{/css/global.css}" />
 	<link rel="stylesheet" th:href="@{/css/discuss-detail.css}" />
+	<link rel="stylesheet" type="text/css" th:href="@{/editor-md/css/editormd.css}" />
 	<style>
 		.custom-alert {
 			display: none;
@@ -79,13 +80,8 @@
 					</div>
 				</div>	
 				<!-- 正文 -->
-				<div class="mt-4 mb-3 content" th:utext="${post.content}">
-					金三银四的金三已经到了，你还沉浸在过年的喜悦中吗？
-					如果是，那我要让你清醒一下了：目前大部分公司已经开启了内推，正式网申也将在3月份陆续开始，金三银四，春招的求职黄金时期已经来啦！！！
-					再不准备，作为19应届生的你可能就找不到工作了。。。作为20届实习生的你可能就找不到实习了。。。
-					现阶段时间紧，任务重，能做到短时间内快速提升的也就只有算法了，
-					那么算法要怎么复习？重点在哪里？常见笔试面试算法题型和解题思路以及最优代码是怎样的？
-					跟左程云老师学算法，不仅能解决以上所有问题，还能在短时间内得到最大程度的提升！！！
+				<div class="mt-4 mb-3 content" id="md-content">
+					<textarea style="display: none" th:utext="${post.content}"></textarea>
 				</div>
 			</div>
 			<!-- 回帖 -->
@@ -225,5 +221,27 @@
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 	<script th:src="@{/js/global.js}"></script>
 	<script th:src="@{/js/discuss.js}"></script>
+	<script th:src="@{/editor-md/editormd.min.js}"></script>
+	<script th:src="@{/editor-md/lib/marked.min.js}"></script>
+	<script th:src="@{/editor-md/lib/prettify.min.js}"></script>
+	<script th:src="@{/editor-md/lib/raphael.min.js}"></script>
+	<script th:src="@{/editor-md/lib/underscore.min.js}"></script>
+	<script th:src="@{/editor-md/lib/sequence-diagram.min.js}"></script>
+	<script th:src="@{/editor-md/lib/flowchart.min.js}"></script>
+	<script th:src="@{/editor-md/lib/jquery.flowchart.min.js}"></script>
+	<script type="text/javascript">
+		var testEditor;
+		$(function () {
+			testEditor = editormd.markdownToHTML("md-content", {
+				htmlDecode: "style,script,iframe",
+				emoji: true,
+				taskList: true,
+				tex: true,
+				flowChart: true,
+				sequenceDiagram: true,
+				codeFold: true
+			});
+		});
+	</script>
 </body>
 </html>

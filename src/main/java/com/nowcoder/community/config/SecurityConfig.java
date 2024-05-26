@@ -32,6 +32,7 @@ public class SecurityConfig implements CommunityConstant {
                         "/user/updatePassword",  // 修改密码
                         "/user/updateUsername", // 修改名字
                         "/discuss/add",   // 上传帖子
+                        "/discuss/publish", // 发布帖子页
                         "/comment/add/**", // 评论
                         "/letter/**",     // 私信
                         "/notice/**",    // 通知

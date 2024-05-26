@@ -32,16 +32,13 @@ public class WebMvcConfig  implements WebMvcConfigurer {
                 .addPathPatterns("/register", "/login");  //明确添加拦截路径
 
         registry.addInterceptor(loginTicketInterceptor).
-                excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg","/**/*.jpeg");
-
-//        registry.addInterceptor(loginRequiredInterceptor).
-//                excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg","/**/*.jpeg");
+                excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg","/**/*.jpeg", "/editor-md/**");
 
         registry.addInterceptor(messageInterceptor).
-                excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg","/**/*.jpeg");
+                excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg","/**/*.jpeg", "/editor-md/**");
 
         registry.addInterceptor(dataInterceptor).
-                excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg","/**/*.jpeg");
+                excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg","/**/*.jpeg", "/editor-md/**");
     }
 
 

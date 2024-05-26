@@ -8,6 +8,7 @@
     <link rel="icon" th:href="@{/img/icon.png}"/>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" th:href="@{/css/global.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/editor-md/css/editormd.css}" />
     <title>个人主页</title>
 </head>
 <body>
@@ -50,14 +51,11 @@
                         <div class="font-size-16 text-info">
                             <a th:href="@{|/discuss/detail/${map.discussPost.id}|}" th:utext="${map.discussPost.title}" class="text-info">备战春招，面试刷题跟他复习，一个月全搞定！</a>
                         </div>
-                        <div class="mt-1 font-size-14" th:utext="${map.discussPost.content}">
-                            金三银四的金三已经到了，你还沉浸在过年的喜悦中吗？
-                            如果是，那我要让你清醒一下了：目前大部分公司已经开启了内推，正式网申也将在3月份陆续开始，金三银四，春招的求职黄金时期已经来啦！！！
-                            再不准备，作为19应届生的你可能就找不到工作了。。。作为20届实习生的你可能就找不到实习了。。。
-                            现阶段时间紧，任务重，能做到短时间内快速提升的也就只有算法了，
-                            那么算法要怎么复习？重点在哪里？常见笔试面试算法题型和解题思路以及最优代码是怎样的？
-                            跟左程云老师学算法，不仅能解决以上所有问题，还能在短时间内得到最大程度的提升！！！
+                        <a th:href="@{|/discuss/detail/${map.discussPost.id}|}">
+                        <div class="mt-4 mb-3 content" id="md-content">
+                            <textarea style="display: none" th:utext="${map.discussPost.content}"></textarea>
                         </div>
+                        </a>
                         <div class="text-right font-size-12 text-muted">
                             赞 <i class="mr-3" th:text="${map.likeCount}">11</i> 发布于 <b th:text="${#dates.format(map.discussPost.createTime,'yyyy-MM-dd HH:mm:ss')}">2019-04-15 10:10:10</b>
                         </div>
@@ -79,5 +77,27 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 <script th:src="@{/js/global.js}"></script>
+<script th:src="@{/editor-md/editormd.min.js}"></script>
+<script th:src="@{/editor-md/lib/marked.min.js}"></script>
+<script th:src="@{/editor-md/lib/prettify.min.js}"></script>
+<script th:src="@{/editor-md/lib/raphael.min.js}"></script>
+<script th:src="@{/editor-md/lib/underscore.min.js}"></script>
+<script th:src="@{/editor-md/lib/sequence-diagram.min.js}"></script>
+<script th:src="@{/editor-md/lib/flowchart.min.js}"></script>
+<script th:src="@{/editor-md/lib/jquery.flowchart.min.js}"></script>
+<script type="text/javascript">
+    var testEditor;
+    $(function () {
+        testEditor = editormd.markdownToHTML("md-content", {
+            htmlDecode: "style,script,iframe",
+            emoji: true,
+            taskList: true,
+            tex: true,
+            flowChart: true,
+            sequenceDiagram: true,
+            codeFold: true
+        });
+    });
+</script>
 </body>
 </html>

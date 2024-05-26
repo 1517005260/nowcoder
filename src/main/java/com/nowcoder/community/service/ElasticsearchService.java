@@ -4,8 +4,6 @@ import com.nowcoder.community.dao.elasticsearch.DiscussPostRepository;
 import com.nowcoder.community.dao.elasticsearch.UserRepository;
 import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.entity.User;
-import org.elasticsearch.index.query.Operator;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

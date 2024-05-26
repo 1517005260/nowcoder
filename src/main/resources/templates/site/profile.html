@@ -101,6 +101,12 @@
 							th:disabled="${user.type == 1}"
 							th:onclick="|updateUserType(${user.id},${user.type}, 1)|"
 							sec:authorize="hasAnyAuthority('admin')">管理员</button>
+					<button type="button" class="btn btn-sm"
+							th:if="${loginUser!=null && loginUser.id!=user.id }"
+							th:class="btn-primary"
+							th:onclick="|sendLetter(${user.id}, ${loginUser.id})|"
+							sec:authorize="hasAnyAuthority('moderator', 'admin', 'user')"
+							style="margin-left: 10px;border-radius: 5px;">给TA私信</button>
 				</div>
 					</div>
 				</div>
@@ -136,6 +142,17 @@
 						}
 					}
 			)
+		}
+
+		function sendLetter(userId, loginUserId){
+			let conversation_id = "";
+			if(userId > loginUserId){
+				conversation_id = loginUserId + "_" + userId;
+			}else {
+				conversation_id = userId + "_" +loginUserId
+			}
+			let url = CONTEXT_PATH + "/letter/detail/" + conversation_id
+			window.location.href = url;
 		}
 
 	</script>
