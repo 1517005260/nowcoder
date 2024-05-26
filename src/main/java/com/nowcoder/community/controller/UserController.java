@@ -13,12 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +70,22 @@ public class UserController implements CommunityConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
+
+    // @用户用，获取用户的id
+    @RequestMapping(path = "/id", method = RequestMethod.GET)
+    @ResponseBody
+    public String getUserId(@RequestParam String username){
+        if(username == null){
+            return CommunityUtil.getJSONString(1,"用户名为空！");
+        }
+        User user = userService.findUserByName(username);
+        if(user== null){
+            return CommunityUtil.getJSONString(1,"用户不存在！");
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put(username, user.getId());
+        return CommunityUtil.getJSONString(0, "已找到用户",map);
+    }
 
     @LoginRequired
     @RequestMapping(path = "/setting", method = RequestMethod.GET)
@@ -190,7 +205,7 @@ public class UserController implements CommunityConstant {
         if (discussList != null) {
             for (DiscussPost post : discussList) {
                 Map<String, Object> map = new HashMap<>();
-                map.put("discussPost", post);
+                map.put("post", post);
                 map.put("likeCount", likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId()));
                 discussVOList.add(map);
             }
@@ -250,7 +265,7 @@ public class UserController implements CommunityConstant {
         if (discussList != null) {
             for (DiscussPost post : discussList) {
                 Map<String, Object> map = new HashMap<>();
-                map.put("discussPost", post);
+                map.put("post", post);
                 map.put("likeCount", likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId()));
                 discussVOList.add(map);
             }

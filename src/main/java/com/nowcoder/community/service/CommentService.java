@@ -1,8 +1,13 @@
 package com.nowcoder.community.service;
 
 import com.nowcoder.community.dao.CommentMapper;
+import com.nowcoder.community.dao.UserMapper;
 import com.nowcoder.community.entity.Comment;
+import com.nowcoder.community.entity.Event;
+import com.nowcoder.community.entity.User;
+import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.util.CommunityConstant;
+import com.nowcoder.community.util.HostHolder;
 import com.nowcoder.community.util.SensitiveFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class CommentService implements CommunityConstant {
@@ -25,6 +32,15 @@ public class CommentService implements CommunityConstant {
     @Autowired
     private DiscussPostService discussPostService;
 
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private HostHolder hostHolder;
+
+    @Autowired
+    private EventProducer eventProducer;
+
     public List<Comment> findCommentsByEntity(int entityType, int entityId, int offset, int limit){
         return commentMapper.selectCommentsByEntity(entityType, entityId, offset, limit);
     }
@@ -34,7 +50,7 @@ public class CommentService implements CommunityConstant {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRED)
-    public int addComment(Comment comment){
+    public int addComment(Comment comment, int postId){
         if(comment == null){
             throw new IllegalArgumentException("参数不能为空！");
         }
@@ -49,6 +65,25 @@ public class CommentService implements CommunityConstant {
             discussPostService.updateCommentCount(comment.getEntityId(),count);
         }
 
+        // 匹配评论中的 @用户名 并发送通知
+        String content = comment.getContent();
+        Pattern pattern = Pattern.compile("@([a-zA-Z0-9_]+)(\\s|\\b|\\p{Punct}|$)");
+        Matcher matcher = pattern.matcher(content);
+        while (matcher.find()) {
+            String username = matcher.group(1);
+            User user = userMapper.selectByName(username);
+            if (user != null) {
+                // 发送通知
+                Event mentionEvent = new Event()
+                        .setTopic(TOPIC_MENTION)
+                        .setUserId(hostHolder.getUser().getId())
+                        .setEntityType(ENTITY_TYPE_COMMENT)
+                        .setEntityId(comment.getId())
+                        .setEntityUserId(user.getId())
+                        .setData("postId", postId);
+                eventProducer.fireEvent(mentionEvent);
+            }
+        }
         return rows;
     }
 

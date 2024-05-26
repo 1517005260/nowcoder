@@ -61,6 +61,10 @@ public class UserService implements CommunityConstant {
             map.put("usernameMsg", "账号不能为空！");
             return map;
         }
+        if(user.getUsername().contains(" ")){
+            map.put("usernameMsg", "账号不能包含空格！");
+            return map;
+        }
         if(StringUtils.isBlank(user.getPassword())){
             map.put("passwordMsg", "密码不能为空！");
             return map;
@@ -227,8 +231,18 @@ public class UserService implements CommunityConstant {
             map.put("errorMsg", "新用户名不能为空！");
             return map;
         }
+        if(username.contains(" ")){
+            map.put("errorMsg", "新用户名不能包含空格！");
+            return map;
+        }
         if(username.equals(oldUsername)){
             map.put("errorMsg", "新用户名和旧用户名不能重复！");
+            return map;
+        }
+        // 检查新用户名是否已存在
+        User existingUser = userMapper.selectByName(username);
+        if (existingUser != null) {
+            map.put("errorMsg", "新用户名已存在，请选择其他用户名！");
             return map;
         }
         userMapper.updateUsername(userId, username);

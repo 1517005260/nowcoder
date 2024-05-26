@@ -65,5 +65,4 @@
                       from discuss_post
                       where id = comment.entity_id and status != 2)  <!--并且帖子没被删除-->
     </select>
-
 </mapper>

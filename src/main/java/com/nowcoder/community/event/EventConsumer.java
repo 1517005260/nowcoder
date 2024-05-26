@@ -71,7 +71,8 @@ public class EventConsumer implements CommunityConstant {
 
 
     // 由于三个消息通知格式类似，所以写一个方法就行
-    @KafkaListener(topics = {TOPIC_COMMENT, TOPIC_LIKE, TOPIC_FOLLOW})
+    // 新增系统通知：@用户
+    @KafkaListener(topics = {TOPIC_COMMENT, TOPIC_LIKE, TOPIC_FOLLOW, TOPIC_MENTION})
     public void handleMessage(ConsumerRecord record){
         if(record == null || record.value() == null){
             logger.error("消息的内容为空！");

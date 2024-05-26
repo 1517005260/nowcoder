@@ -42,7 +42,7 @@ public class CommentController implements CommunityConstant {
         comment.setUserId(hostHolder.getUser().getId());
         comment.setStatus(0);  //默认有效
         comment.setCreateTime(new Date());
-        commentService.addComment(comment);
+        commentService.addComment(comment,id);
 
         // 触发评论的系统通知
         Event event = new Event().setTopic(TOPIC_COMMENT)

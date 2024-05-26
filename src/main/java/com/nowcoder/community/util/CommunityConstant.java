@@ -37,6 +37,8 @@ public interface CommunityConstant {
     String TOPIC_REGISTER = "register";
     // 用户信息更新
     String TOPIC_UPDATE = "update";
+    // @用户
+    String TOPIC_MENTION = "mention";
 
     // 系统用户id
     int SYSTEM_USER_ID = 1;

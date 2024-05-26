@@ -93,7 +93,6 @@ public static void main(String[] args) {
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 <script th:src="@{/js/global.js}"></script>
 <script th:src="@{/editor-md/editormd.min.js}"></script>
-<script th:src="@{/js/publish-posts.js}"></script>
 <script type="text/javascript">
     var testEditor;
 
@@ -106,9 +105,11 @@ public static void main(String[] args) {
             saveHTMLToTextarea: true, // 方便post提交表单
             imageUpload: false
         });
+    });
 
-        $('#publishBtn').click(publish);
-        $('#backIndexBtn').click(backIndex);
+    $(function() {
+        $("#publishBtn").click(publish);
+        $("#backIndexBtn").click(backIndex);
     });
 
     function publish() {
@@ -138,7 +139,7 @@ public static void main(String[] args) {
             {"title": title, "content": content},
             function(data) {
                 data = $.parseJSON(data);
-                $("#hintBody").text(data.msg);
+                $("#hintBody").text("发布成功！");
                 $("#hintModal").modal("show");
                 setTimeout(function() {
                     $("#hintModal").modal("hide");

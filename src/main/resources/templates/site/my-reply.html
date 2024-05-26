@@ -55,9 +55,11 @@
 							顶顶顶!
 						</div>
 						</a>
+						<a th:href="@{|/discuss/detail/${map.discussPost.id}|}">
 						<div class="text-right font-size-12 text-muted">
 							回复于 <b th:text="${#dates.format(map.comment.createTime,'yyyy-MM-dd HH:mm:ss')}">2019-04-15 10:10:10</b>
 						</div>
+						</a>
 					</li>
 				</ul>
 				<!-- 分页 -->

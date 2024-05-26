@@ -233,6 +233,26 @@ public class MessageController implements CommunityConstant {
             model.addAttribute("followNotice", messageVO);
         }
 
+        // @User
+        message = messageService.findLatestNotice(user.getId(), TOPIC_MENTION);
+        messageVO = new HashMap<>();
+        if(message != null){
+            messageVO.put("message", message);
+
+            String content = HtmlUtils.htmlUnescape(message.getContent());
+            Map<String, Object> data = JSONObject.parseObject(content, HashMap.class);
+            messageVO.put("user", userService.findUserById((Integer) data.get("userId")));
+            messageVO.put("entityType", data.get("entityType"));
+            messageVO.put("entityId", data.get("entityId"));
+
+            int count = messageService.findNoticeCount(user.getId(), TOPIC_MENTION);
+            messageVO.put("count", count);
+            count = messageService.findNoticeUnreadCount(user.getId(), TOPIC_MENTION);
+            messageVO.put("unread", count);
+
+            model.addAttribute("mentionNotice", messageVO);
+        }
+
         // 未读消息总数
         int letterUnreadCount = messageService.findLetterUnreadCount(user.getId(), null);
         model.addAttribute("letterUnreadCount", letterUnreadCount);

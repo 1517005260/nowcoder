@@ -59,6 +59,11 @@
 									关注了你,
 									<a class="text-primary" th:href="@{|/user/profile/${map.user.id}|}">点击查看</a> !
 								</span>
+								<span th:if="${topic.equals('mention')}">用户
+									<i th:utext="${map.user.username}">nowcoder</i>
+									@了你,
+									<a class="text-primary" th:href="@{|/discuss/detail/${map.postId}|}">点击查看</a> !
+								</span>
 							</div>
 						</div>
 					</li>

@@ -41,20 +41,21 @@ public class SearchController implements CommunityConstant {
 
     // 路径格式：/search?keyword=xxx
     @RequestMapping(path = "/search", method = RequestMethod.GET)
-    public String search(String keyword, Page page, Model model){
+    public String search(String keyword, Page page, Model model) {
         // 搜索帖子
-        // page的current从1开始但是本方法要求从0开始
         org.springframework.data.domain.Page<DiscussPost> searchResult =
                 elasticsearchService.searchDiscussPost(keyword, page.getCurrent() - 1, page.getLimit());
 
         List<Map<String, Object>> discussPosts = new ArrayList<>();
-        if(searchResult != null){
-            for(DiscussPost post : searchResult){
+        if (searchResult != null) {
+            for (DiscussPost post : searchResult) {
                 Map<String, Object> map = new HashMap<>();
+                String contentPlainText = extractPlainText(post.getContent());
 
                 map.put("post", post);
                 map.put("user", userService.findUserById(post.getUserId()));  // 作者
                 map.put("likeCount", likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId()));  // 赞数
+                map.put("contentPlainText", contentPlainText);  // Processed plain text content
 
                 discussPosts.add(map);
             }
@@ -63,10 +64,32 @@ public class SearchController implements CommunityConstant {
         model.addAttribute("keyword", keyword);
 
         page.setPath("/search?keyword=" + keyword);
-        page.setRows(searchResult == null ? 0 : (int)searchResult.getTotalElements());
+        page.setRows(searchResult == null ? 0 : (int) searchResult.getTotalElements());
 
         return "/site/search";
     }
+
+    private String extractPlainText(String markdown) {
+        if (markdown == null || markdown.isEmpty()) {
+            return "";
+        }
+        // 替换掉所有Markdown语法标记
+        String plainText = markdown.replaceAll("\\!\\[.*?\\]\\(.*?\\)", "")  // Remove images
+                .replaceAll("\\[(.*?)\\]\\(.*?\\)", "$1") // Remove links, keep text
+                .replaceAll("`", "")                      // Remove code markers
+                .replaceAll("\\*\\*|__", "")              // Remove bold markers
+                .replaceAll("\\*", "")                    // Remove italic markers
+                .replaceAll("~~", "")                     // Remove strikethrough markers
+                .replaceAll("#+", "")                     // Remove headers
+                .replaceAll("> ", "")                     // Remove blockquotes
+                .replaceAll("- ", "")                     // Remove list items
+                .replaceAll("\\n{2,}", "\n")              // Remove extra newlines
+                .replaceAll("\\r\\n|\\r|\\n", " ")        // Convert newlines to spaces
+                .trim();                                   // Trim leading/trailing whitespace
+
+        return plainText;
+    }
+
 
     @RequestMapping(path = "/searchUser", method = RequestMethod.GET)
     public String searchUser(String username, Page page, Model model){
