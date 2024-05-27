@@ -67,7 +67,7 @@ public class CommentService implements CommunityConstant {
 
         // 匹配评论中的 @用户名 并发送通知
         String content = comment.getContent();
-        Pattern pattern = Pattern.compile("@([a-zA-Z0-9_]+)(\\s|\\b|\\p{Punct}|$)");
+        Pattern pattern = Pattern.compile("@([a-zA-Z0-9_]+?)(?=[\\s@]|$)");
         Matcher matcher = pattern.matcher(content);
         while (matcher.find()) {
             String username = matcher.group(1);

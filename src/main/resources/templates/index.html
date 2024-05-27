@@ -58,12 +58,12 @@
 					</ul>
 					<!-- 搜索帖子 -->
 					<form class="form-inline my-2 my-lg-0" th:action="@{/search}" method="get">
-						<input class="form-control mr-sm-2 short-search" type="search" aria-label="Search" name="keyword" id="keyword" th:value="${keyword}" required style="width: 135px;"/>
+						<input placeholder="搜点什么..." class="form-control mr-sm-2 short-search" type="search" aria-label="Search" name="keyword" id="keyword" th:value="${keyword}" required style="width: 135px;"/>
 						<button class="btn btn-outline-light my-2 my-sm-0" type="submit">搜帖子</button>
 					</form>
 					<!--搜索用户-->
 					<form class="form-inline my-2 my-lg-0" th:action="@{/searchUser}" method="get">
-						<input class="form-control mr-sm-2 short-search" type="search" aria-label="Search" name="username" id="username" th:value="${name}" required style="width: 135px;margin-left: 10px;"/>
+						<input placeholder="想找谁呢？" class="form-control mr-sm-2 short-search" type="search" aria-label="Search" name="username" id="username" th:value="${name}" required style="width: 135px;margin-left: 10px;"/>
 						<button class="btn btn-outline-light my-2 my-sm-0" type="submit">找用户</button>
 					</form>
 				</div>
