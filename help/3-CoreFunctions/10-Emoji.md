@@ -136,3 +136,36 @@ discuss-detail.html:
     });
 </script>
 ```
+
+publish和update-posts界面：
+
+```html
+<style>
+    .emoji-picker {
+        z-index: 1050;
+    }
+</style>
+
+<div class="text-right mt-2">
+    <button type="button" class="btn btn-light btn-sm emoji-button">😊</button>
+</div>
+
+<script src="https://unpkg.com/emoji-button@latest/dist/index.js"></script>
+<script>
+    $(function() {
+        $("#publishBtn").click(publish);
+        $("#backIndexBtn").click(backIndex);
+
+        const button = document.querySelector('.emoji-button');
+        const picker = new EmojiButton();
+
+        picker.on('emoji', emoji => {
+            testEditor.insertValue(emoji);
+        });
+
+        button.addEventListener('click', () => {
+            picker.showPicker(button);
+        });
+    });
+</script>
+```
