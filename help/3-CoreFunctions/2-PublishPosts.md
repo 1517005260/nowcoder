@@ -270,3 +270,272 @@ index.html中“我要发布”增加登录判定
 ```html
 <button type="button" class="btn btn-primary btn-sm position-absolute rt-0" data-toggle="modal" data-target="#publishModal" th:if="${loginUser!=null}">我要发布</button>
 ```
+
+## 修改帖子
+
+需求：在discusspost-detail中，增加修改帖子的按钮，使得用户能够编辑已经发布的帖子。需要更新内容和时间
+
+1. 在DiscussPostMapper中新增：
+
+```java
+// 更新帖子
+void updatePost(int id, String title, String content, Date time);
+```
+
+sql实现：
+
+```xml
+<update id="updatePost">
+  update discuss_post set content = #{content}, create_time = #{time}, title = #{title}
+  where id = #{id}
+</update>
+```
+
+2. DiscussPostService追加:
+
+```java
+// 更新帖子
+public void updatePost(DiscussPost discussPost){
+  if(discussPost == null){
+    throw new IllegalArgumentException("参数不能为空！");
+  }
+
+  discussPost.setTitle(HtmlUtils.htmlEscape(discussPost.getTitle()));
+  discussPost.setContent(HtmlUtils.htmlEscape(discussPost.getContent()));
+  discussPost.setTitle(sensitiveFilter.filter(discussPost.getTitle()));
+  discussPost.setContent(sensitiveFilter.filter(discussPost.getContent()));
+
+  discussPostMapper.updatePost(discussPost.getId(), discussPost.getTitle(), discussPost.getContent(), discussPost.getCreateTime());
+}
+```
+
+3. DiscussPostController更新：
+
+```java
+// 进入更改帖子的页面
+@RequestMapping(path = "/updatePost/{postId}", method = RequestMethod.GET)
+public String getUpdatePage(@PathVariable("postId") int postId, Model model){
+  DiscussPost post = discussPostService.findDiscussPostById(postId);
+  if (post == null || post.getUserId() != hostHolder.getUser().getId()) {
+    return "/error/404";  // 只能作者访问
+  }
+  model.addAttribute("title", post.getTitle());
+  model.addAttribute("content", post.getContent());
+  model.addAttribute("id", postId);
+
+  return "/site/update-posts";
+}
+
+// 更改帖子请求
+@RequestMapping(path = "/update/{postId}", method = RequestMethod.POST)
+@ResponseBody
+public String UpdateDiscussPost(@PathVariable("postId") int postId,String title, String content){
+  User user = hostHolder.getUser();
+  if(user == null){
+    return CommunityUtil.getJSONString(403, "你还没有登录哦!");
+  }
+  DiscussPost post = discussPostService.findDiscussPostById(postId);
+  if (post == null || post.getUserId() != user.getId()) {
+    return CommunityUtil.getJSONString(403, "你没有权限修改此帖子!");
+  }
+  post.setTitle(title);
+  post.setContent(content);
+  post.setCreateTime(new Date());
+  discussPostService.updatePost(post);
+
+  // 改帖事件，存进es服务器
+  Event event = new Event()
+          .setTopic(TOPIC_PUBLISH)
+          .setUserId(user.getId())
+          .setEntityType(ENTITY_TYPE_POST)
+          .setEntityId(post.getId());
+  eventProducer.fireEvent(event);
+
+  // 初始分数计算
+  String redisKey = RedisKeyUtil.getPostScoreKey();
+  redisTemplate.opsForSet().add(redisKey, post.getId());
+
+  return CommunityUtil.getJSONString(0, "修改成功！");
+}
+```
+
+Security配置：
+
+```java
+http.authorizeHttpRequests(authorize -> authorize.requestMatchers(
+                        "/user/setting",  // 用户设置
+                        "/user/upload",   // 上传头像
+                        "/user/updatePassword",  // 修改密码
+                        "/user/updateUsername", // 修改名字
+                        "/discuss/add",   // 上传帖子
+                        "/discuss/publish", // 发布帖子页
+                        "/discuss/update/**", // 帖子修改
+                        "/discuss/updatePost/**",
+                        "/comment/add/**", // 评论
+                        "/letter/**",     // 私信
+                        "/notice/**",    // 通知
+                        "/like",         // 点赞
+                        "/follow",       // 关注
+                        "/unfollow",      // 取消关注
+                        "/share/**"      // 分享
+                ).hasAnyAuthority(         // 这些功能只要登录就行
+                        AUTHORITY_USER,
+                        AUTHORITY_ADMIN,
+                        AUTHORITY_MODERATOR
+                )
+```
+
+4. discusspost-detail按钮更新：
+
+```html
+<button type="button" class="btn btn-danger btn-sm" id="updateBtn"
+    sec:authorize="hasAnyAuthority('moderator', 'admin', 'user')"
+    th:if="${post.userId == loginUser.id}" th:onclick="|update(${post.id})|">修改</button>
+```
+
+js代码：
+
+```javascript
+function update(id){
+    window.location.href = CONTEXT_PATH + "/discuss/updatePost/" + id;
+}
+```
+
+新页面update-posts:
+
+```html
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <link rel="icon" th:href="@{/img/icon.png}"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" th:href="@{/css/global.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/editor-md/css/editormd.css}" />
+    <title>修改帖子</title>
+</head>
+<body class="bg-white">
+<div class="nk-container">
+    <!-- 头部 -->
+    <header class="bg-dark sticky-top" th:replace="index::header">
+    </header>
+
+    <!-- 内容 -->
+    <div class="main" style="background-color: rgb(238,238,238)">
+        <div class="container mt-5">
+            <div class="form-group">
+                <input type="text" class="form-control" style="font-size: 24px; font-weight: 500;"
+                       id="recipient-name" placeholder="输入文章标题..." required th:value="${title}">
+            </div>
+
+            <div id="test-editormd" style="width:2000px;">
+                <textarea class="form-control" id="message-text" style="display:none;" th:text="${content}"></textarea>
+            </div>
+
+            <div style="text-align: center">
+                <button type="button" class="btn btn-outline-secondary" id="backIndexBtn">返回首页</button>
+                <button type="button" class="btn btn-outline-primary" id="publishBtn"
+                        style="color: rgb(51, 133, 255)"
+                        th:onclick="|publish(${id})|">修改文章</button>
+            </div>
+
+            <!-- 提示框 -->
+            <div class="modal fade" id="hintModal" tabindex="-1" role="dialog" aria-labelledby="hintModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="hintModalLabel">提示</h5>
+                        </div>
+                        <div class="modal-body" id="hintBody"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 尾部 -->
+    <footer class="bg-dark" th:replace="index::footer">
+    </footer>
+
+</div>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script th:src="@{/js/global.js}"></script>
+<script th:src="@{/editor-md/editormd.min.js}"></script>
+<script type="text/javascript">
+    var testEditor;
+
+    $(function() {
+        testEditor = editormd("test-editormd", {
+            width: "90%",
+            height: 640,
+            syncScrolling: "single",
+            path: "../../editor-md/lib/",
+            saveHTMLToTextarea: true, // 方便post提交表单
+            imageUpload: false,
+            placeholder: "欢迎来到帖子编辑界面~ 本论坛支持 Markdown/非Markdown 格式的帖子~"
+        });
+    });
+
+    $(function() {
+        $("#backIndexBtn").click(backIndex);
+    });
+
+    function publish(id) {
+        var title = $('#recipient-name').val().trim();
+        var content = testEditor.getMarkdown().trim();
+
+        if (title === "") {
+            showHintModal("标题不能为空");
+            return;
+        }
+
+        if (content === "") {
+            showHintModal("内容不能为空");
+            return;
+        }
+
+        $('#publishModal').modal('hide');
+
+        let token = $("meta[name='_csrf']").attr("content");
+        let header = $("meta[name='_csrf_header']").attr("content");
+        $(document).ajaxSend(function(e, xhr, options) {
+            xhr.setRequestHeader(header, token);
+        });
+
+        $.post(
+            CONTEXT_PATH + "/discuss/update/" + id,
+            {"title": title, "content": content},
+            function(data) {
+                data = $.parseJSON(data);
+                $("#hintBody").text("修改成功！");
+                $("#hintModal").modal("show");
+                setTimeout(function() {
+                    $("#hintModal").modal("hide");
+                    if (data.code == 0) {
+                        location.href = CONTEXT_PATH + "/index";
+                    }
+                }, 2000);
+            }
+        );
+    }
+
+    function showHintModal(message) {
+        $("#hintBody").text(message);
+        $("#hintModal").modal("show");
+        setTimeout(function() {
+            $("#hintModal").modal("hide");
+        }, 2000);
+    }
+
+    function backIndex() {
+        location.href = CONTEXT_PATH + "/index";
+    }
+</script>
+</body>
+</html>
+```

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -39,6 +40,20 @@ public class DiscussPostService {
         discussPost.setContent(sensitiveFilter.filter(discussPost.getContent()));
 
         return discussPostMapper.insertDiscussPost(discussPost);
+    }
+
+    // 更新帖子
+    public void updatePost(DiscussPost discussPost){
+        if(discussPost == null){
+            throw new IllegalArgumentException("参数不能为空！");
+        }
+
+        discussPost.setTitle(HtmlUtils.htmlEscape(discussPost.getTitle()));
+        discussPost.setContent(HtmlUtils.htmlEscape(discussPost.getContent()));
+        discussPost.setTitle(sensitiveFilter.filter(discussPost.getTitle()));
+        discussPost.setContent(sensitiveFilter.filter(discussPost.getContent()));
+
+        discussPostMapper.updatePost(discussPost.getId(), discussPost.getTitle(), discussPost.getContent(), discussPost.getCreateTime());
     }
 
     public DiscussPost findDiscussPostById(int id){

@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" th:href="@{/css/global.css}" />
     <link rel="stylesheet" type="text/css" th:href="@{/editor-md/css/editormd.css}" />
-    <title>发布帖子</title>
+    <title>修改帖子</title>
 </head>
 <body class="bg-white">
 <div class="nk-container">
@@ -22,17 +22,18 @@
         <div class="container mt-5">
             <div class="form-group">
                 <input type="text" class="form-control" style="font-size: 24px; font-weight: 500;"
-                       id="recipient-name" placeholder="输入文章标题..." required>
+                       id="recipient-name" placeholder="输入文章标题..." required th:value="${title}">
             </div>
 
             <div id="test-editormd" style="width:2000px;">
-                <textarea class="form-control" id="message-text" style="display:none;"></textarea>
+                <textarea class="form-control" id="message-text" style="display:none;" th:text="${content}"></textarea>
             </div>
 
             <div style="text-align: center">
                 <button type="button" class="btn btn-outline-secondary" id="backIndexBtn">返回首页</button>
                 <button type="button" class="btn btn-outline-primary" id="publishBtn"
-                        style="color: rgb(51, 133, 255)">发布文章</button>
+                        style="color: rgb(51, 133, 255)"
+                        th:onclick="|publish(${id})|">修改文章</button>
             </div>
 
             <!-- 提示框 -->
@@ -67,19 +68,18 @@
             width: "90%",
             height: 640,
             syncScrolling: "single",
-            path: "../editor-md/lib/",
+            path: "../../editor-md/lib/",
             saveHTMLToTextarea: true, // 方便post提交表单
             imageUpload: false,
-            placeholder: "欢迎来到帖子发布界面~ 本论坛支持 Markdown/非Markdown 格式的帖子~"
+            placeholder: "欢迎来到帖子编辑界面~ 本论坛支持 Markdown/非Markdown 格式的帖子~"
         });
     });
 
     $(function() {
-        $("#publishBtn").click(publish);
         $("#backIndexBtn").click(backIndex);
     });
 
-    function publish() {
+    function publish(id) {
         var title = $('#recipient-name').val().trim();
         var content = testEditor.getMarkdown().trim();
 
@@ -102,11 +102,11 @@
         });
 
         $.post(
-            CONTEXT_PATH + "/discuss/add",
+            CONTEXT_PATH + "/discuss/update/" + id,
             {"title": title, "content": content},
             function(data) {
                 data = $.parseJSON(data);
-                $("#hintBody").text("发布成功！");
+                $("#hintBody").text("修改成功！");
                 $("#hintModal").modal("show");
                 setTimeout(function() {
                     $("#hintModal").modal("hide");

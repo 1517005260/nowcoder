@@ -4,6 +4,7 @@ import com.nowcoder.community.entity.DiscussPost;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 @Mapper
@@ -31,4 +32,7 @@ public interface DiscussPostMapper {
     int updateType(int id, int type);
     int updateStatus(int id, int status);
     int updateScore(int id, double score);
+
+    // 更新帖子
+    void updatePost(int id, String title, String content, Date time);
 }

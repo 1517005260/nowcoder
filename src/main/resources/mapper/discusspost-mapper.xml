@@ -68,4 +68,9 @@
         where id = #{id}
     </update>
 
+    <update id="updatePost">
+        update discuss_post set content = #{content}, create_time = #{time}, title = #{title}
+        where id = #{id}
+    </update>
+
 </mapper>

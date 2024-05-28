@@ -54,6 +54,9 @@
 					<button type="button" class="btn btn-danger btn-sm" id="shareBtn"
 							sec:authorize="hasAnyAuthority('moderator', 'admin', 'user')">分享</button>
 					<div id="customAlert" class="custom-alert">链接复制成功！</div>
+					<button type="button" class="btn btn-danger btn-sm" id="updateBtn"
+							sec:authorize="hasAnyAuthority('moderator', 'admin', 'user')"
+							th:if="${post.userId == loginUser.id}" th:onclick="|update(${post.id})|">修改</button>
 				</div>
 			</h6>
 			<!-- 作者 -->

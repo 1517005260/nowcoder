@@ -78,6 +78,52 @@ public class DiscussPostController implements CommunityConstant {
         return CommunityUtil.getJSONString(0, "发布成功！");
     }
 
+    // 进入更改帖子的页面
+    @RequestMapping(path = "/updatePost/{postId}", method = RequestMethod.GET)
+    public String getUpdatePage(@PathVariable("postId") int postId, Model model){
+        DiscussPost post = discussPostService.findDiscussPostById(postId);
+        if (post == null || post.getUserId() != hostHolder.getUser().getId()) {
+            return "/error/404";  // 只能作者访问
+        }
+        model.addAttribute("title", post.getTitle());
+        model.addAttribute("content", post.getContent());
+        model.addAttribute("id", postId);
+
+        return "/site/update-posts";
+    }
+
+    // 更改帖子请求
+    @RequestMapping(path = "/update/{postId}", method = RequestMethod.POST)
+    @ResponseBody
+    public String UpdateDiscussPost(@PathVariable("postId") int postId,String title, String content){
+        User user = hostHolder.getUser();
+        if(user == null){
+            return CommunityUtil.getJSONString(403, "你还没有登录哦!");
+        }
+        DiscussPost post = discussPostService.findDiscussPostById(postId);
+        if (post == null || post.getUserId() != user.getId()) {
+            return CommunityUtil.getJSONString(403, "你没有权限修改此帖子!");
+        }
+        post.setTitle(title);
+        post.setContent(content);
+        post.setCreateTime(new Date());
+        discussPostService.updatePost(post);
+
+        // 改帖事件，存进es服务器
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(post.getId());
+        eventProducer.fireEvent(event);
+
+        // 初始分数计算
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey, post.getId());
+
+        return CommunityUtil.getJSONString(0, "修改成功！");
+    }
+
     //帖子详情
     @RequestMapping(path = "/detail/{discussPostId}", method = RequestMethod.GET)
     public String getDiscussPost(@PathVariable("discussPostId") int discussPostId, Model model, Page page){

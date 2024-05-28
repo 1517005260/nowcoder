@@ -127,3 +127,7 @@ function share(){
         alert('复制失败: ' + err);
     });
 }
+
+function update(id){
+    window.location.href = CONTEXT_PATH + "/discuss/updatePost/" + id;
+}
