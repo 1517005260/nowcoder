@@ -2,16 +2,19 @@ package com.nowcoder.community.service;
 
 import com.nowcoder.community.dao.DiscussPostMapper;
 import com.nowcoder.community.entity.DiscussPost;
+import com.nowcoder.community.entity.User;
+import com.nowcoder.community.util.CommunityConstant;
+import com.nowcoder.community.util.RedisKeyUtil;
 import com.nowcoder.community.util.SensitiveFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
-public class DiscussPostService {
+public class DiscussPostService implements CommunityConstant {
 
     @Autowired
     private DiscussPostMapper discussPostMapper;
@@ -19,8 +22,43 @@ public class DiscussPostService {
     @Autowired
     private SensitiveFilter sensitiveFilter;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     public List<DiscussPost> findDiscussPosts(int userId, int offset, int limit, int orderMode){
         return discussPostMapper.selectDiscussPosts(userId, offset,limit, orderMode);
+    }
+
+    public List<DiscussPost> findFolloweePosts(int userId, int offset, int limit){
+        String followeeKey = RedisKeyUtil.getFolloweeKey(userId, ENTITY_TYPE_USER);
+        Set<Integer> targetIds = redisTemplate.opsForZSet().range(followeeKey, 0, -1);
+        if(targetIds == null){
+            return null;
+        } else{
+            List<Integer> targetIdsList = new ArrayList<>(targetIds);
+            if (targetIdsList.isEmpty()) {
+                return Collections.emptyList(); // 返回空的列表
+            } else {
+                return discussPostMapper.selectFolloweePosts(offset, limit, targetIdsList);
+            }
+        }
+    }
+
+    public int findFolloweePostCount(int userId){
+        String followeeKey = RedisKeyUtil.getFolloweeKey(userId, ENTITY_TYPE_USER);
+        Set<Integer> targetIds = redisTemplate.opsForZSet().range(followeeKey, 0, -1);
+        if(targetIds == null){
+            return 0;
+        }
+        int cnt = 0;
+        for(int id : targetIds){
+            cnt += this.findDiscussPostRows(id);
+        }
+        return cnt;
+    }
+
+    public List<DiscussPost> findUserPosts(int userId){
+        return discussPostMapper.selectUserPosts(userId);
     }
 
     public int findDiscussPostRows(int userId){

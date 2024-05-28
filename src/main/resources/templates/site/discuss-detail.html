@@ -26,6 +26,17 @@
 			font-size: 16px;
 			line-height: 1.5;
 		}
+		.author-label {
+			font-size: 12px;
+			color: grey;
+			border: 1px solid grey;
+			border-radius: 3px;
+			padding-left: 2px;
+			padding-right: 2px;
+			margin-left: 2px;
+			user-select: none;
+		}
+
 	</style>
 	<title>帖子详情</title>
 </head>
@@ -107,6 +118,7 @@
 					<div class="media-body">
 						<div class="mt-0">
 							<span class="font-size-12 text-success" th:utext="${cvo.user.username}">掉脑袋切切</span>
+							<span th:if="${cvo.user.id == post.userId}" class="author-label">up</span>
 							<span class="badge badge-secondary float-right floor">
                                 <i th:text="${page.offset + cvoStat.count}">1</i>  <!--当前楼层数 = 当前页起始楼 + 当前页循环数-->
                                 楼
@@ -138,19 +150,19 @@
                                             <b class="text-info" th:utext="${rvo.user.username}">
                                                 寒江雪
                                             </b>
-                                        </a>	:&nbsp;&nbsp;
+										</a><span th:if="${rvo.user.id==post.userId}" class="author-label">up</span>	:&nbsp;&nbsp;
                                     </span>
 									<span th:if="${rvo.target != null}">
                                         <a th:href="@{|/user/profile/${rvo.user.id}|}">
                                             <b class="text-info" th:utext="${rvo.user.username}">
                                                 寒江雪
                                             </b>
-                                        </a>回复
+                                        </a><span th:if="${rvo.user.id==post.userId}" class="author-label">up</span> 回复
                                         <a th:href="@{|/user/profile/${rvo.target.id}|}">
                                             <b class="text-info" th:utext="${rvo.target.username}">
                                                 寒江雪
                                             </b>
-                                        </a>:&nbsp;&nbsp;
+                                        </a><span th:if="${rvo.target.id==post.userId}" class="author-label">up</span> :&nbsp;&nbsp;
                                     </span>
 									<span class="reply-content" th:utext="${rvo.reply.content}">这个是直播时间哈，觉得晚的话可以直接看之前的完整录播的~</span>
 								</div>

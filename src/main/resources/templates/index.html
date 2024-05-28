@@ -80,6 +80,9 @@
 				<!-- 筛选条件 -->
 				<ul class="nav nav-tabs mb-3">
 					<li class="nav-item">
+						<a th:class="|nav-link ${orderMode==2?'active' :''}|" th:href="@{/index(orderMode=2)}" th:if="${loginUser!=null}">关注</a>
+					</li>
+					<li class="nav-item">
 						<a th:class="|nav-link ${orderMode==1?'active':''}|" th:href="@{/index(orderMode=1)}">最热</a>
 					</li>
 					<li class="nav-item">
@@ -104,6 +107,10 @@
 				</div>
 			</div>
 
+			<div th:if="${#lists.isEmpty(discussPosts)}">
+				<img th:src="@{/img/noResult.png}" alt="无私信" class="img-fluid mx-auto d-block mt-4">
+				<p class="text-center mt-3">额，什么都没有哦~</p>
+			</div>
 			<!-- 帖子列表 -->
 			<ul class="list-unstyled">
 				<li class="media pb-3 pt-3 mb-3 border-bottom" th:each="map:${discussPosts}">

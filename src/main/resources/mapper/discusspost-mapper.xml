@@ -28,6 +28,26 @@
         limit #{offset}, #{limit}
     </select>
 
+    <select id="selectFolloweePosts" resultType="DiscussPost">
+        select <include refid="selectFields"></include>
+        from discuss_post
+        where status != 2
+        and user_id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+    <select id="selectUserPosts" resultType="DiscussPost">
+        select <include refid="selectFields"></include>
+        from discuss_post
+        where status != 2
+        and user_id = #{userId}
+        order by create_time desc
+    </select>
+
     <select id="selectDiscussPostRows" resultType="int">
         select count(id)
         from discuss_post

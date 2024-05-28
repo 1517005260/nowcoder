@@ -15,6 +15,12 @@ public interface DiscussPostMapper {
     //mysql的分页功能很方便，只要改limit参数即可，传入每页的起始行行号offset和最多显示多少条数据limit
     List<DiscussPost> selectDiscussPosts(int userId, int offset, int limit, int orderMode); //orderMode0,最新，1，最热
 
+    // 关注者的帖子
+    List<DiscussPost> selectFolloweePosts(int offset, int limit, List<Integer> ids);
+
+    // 某人所有的帖子，不分页
+    List<DiscussPost> selectUserPosts(int userId);
+
     //页数 = 帖子数 / 每页贴子数
     int selectDiscussPostRows(@Param("userId") int userId);  //@Param可以给参数起别名，使用名字过长的变量
     //另外 **若我想动态拼接sql，并且这个函数有且只有一个参数，就一定需要别名**

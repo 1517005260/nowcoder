@@ -375,3 +375,151 @@ c. 前端index.html:
   </li>
 </ul>
 ```
+
+# orderMode = 2 : 我关注人的帖子
+
+1. dao
+
+DiscussPostMapper新增：
+
+```java
+// 关注者的帖子
+List<DiscussPost> selectFolloweePosts(int offset, int limit, List<Integer> ids);
+
+// 某人所有的帖子，不分页
+List<DiscussPost> selectUserPosts(int userId);
+```
+
+sql实现：
+
+```xml
+<select id="selectFolloweePosts" resultType="DiscussPost">
+  select <include refid="selectFields"></include>
+  from discuss_post
+  where status != 2
+  and user_id in
+  <foreach collection="ids" item="id" open="(" separator="," close=")">
+    #{id}
+  </foreach>
+  order by create_time desc
+  limit #{offset}, #{limit}
+</select>
+
+<select id="selectUserPosts" resultType="DiscussPost">
+select <include refid="selectFields"></include>
+from discuss_post
+where status != 2
+and user_id = #{userId}
+order by create_time desc
+</select>
+```
+
+2. service
+
+DiscussPostService新增：
+
+```java
+@Autowired
+private RedisTemplate redisTemplate;
+
+public List<DiscussPost> findFolloweePosts(int userId, int offset, int limit){
+  String followeeKey = RedisKeyUtil.getFolloweeKey(userId, ENTITY_TYPE_USER);
+  Set<Integer> targetIds = redisTemplate.opsForZSet().range(followeeKey, 0, -1);
+  if(targetIds == null){
+    return null;
+  } else{
+    List<Integer> targetIdsList = new ArrayList<>(targetIds);
+    if (targetIdsList.isEmpty()) {
+      return Collections.emptyList(); // 返回空的列表
+    } else {
+      return discussPostMapper.selectFolloweePosts(offset, limit, targetIdsList);
+    }
+  }
+}
+
+public int findFolloweePostCount(int userId){
+  String followeeKey = RedisKeyUtil.getFolloweeKey(userId, ENTITY_TYPE_USER);
+  Set<Integer> targetIds = redisTemplate.opsForZSet().range(followeeKey, 0, -1);
+  if(targetIds == null){
+    return 0;
+  }
+  int cnt = 0;
+  for(int id : targetIds){
+    cnt += this.findDiscussPostRows(id);
+  }
+  return cnt;
+}
+
+public List<DiscussPost> findUserPosts(int userId){
+  return discussPostMapper.selectUserPosts(userId);
+}
+```
+
+3. controller:
+
+HomeController改动;
+
+```java
+@Autowired
+private HostHolder hostHolder;
+
+@RequestMapping(path = "/index", method = RequestMethod.GET)
+public String getIndexPage(Model model, Page page,
+                           @RequestParam(name = "orderMode", defaultValue = "1")int orderMode){ // 默认热帖排序
+
+  //方法调用前，SpringMVC会自动实例化Model和Page，并将Page注入Model
+  //所以不用model.addAttribute(Page),直接在thymeleaf可以访问Page的数据
+
+  List<DiscussPost> list = new ArrayList<>();
+  if (orderMode == 2) {
+    User user = hostHolder.getUser();
+    if (user == null) {
+      return "/error/404";
+    }
+    int cnt = discussPostService.findFolloweePostCount(user.getId());
+    page.setRows(cnt);
+    list = discussPostService.findFolloweePosts(user.getId(), page.getOffset(), page.getLimit());
+  } else {
+    page.setRows(discussPostService.findDiscussPostRows(0));
+    // 默认是第一页，前10个帖子
+    list = discussPostService.findDiscussPosts(0, page.getOffset(), page.getLimit(), orderMode);
+  }
+  page.setPath("/index?orderMode=" + orderMode);
+
+  // 将前10个帖子和对应的user对象封装
+  List<Map<String, Object>> discussPosts = new ArrayList<>();
+  if(list !=null){
+    for(DiscussPost post:list){
+      Map<String,Object> map = new HashMap<>();
+      map.put("post" , post);
+      User user = userService.findUserById(post.getUserId());
+      map.put("user", user);
+
+      long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId());
+      map.put("likeCount",likeCount);
+
+      discussPosts.add(map);
+    }
+  }
+  // 处理完的数据填充给前端页面
+  model.addAttribute("discussPosts", discussPosts);
+  model.addAttribute("orderMode", orderMode);
+  return "/index";
+}
+```
+
+4. index前端：
+
+```html
+<li class="nav-item">
+    <a th:class="|nav-link ${orderMode==2?'active' :''}|" th:href="@{/index(orderMode=2)}" th:if="${loginUser!=null}">关注</a>
+</li>
+
+<div th:if="${#lists.isEmpty(discussPosts)}">
+  <img th:src="@{/img/noResult.png}" alt="无私信" class="img-fluid mx-auto d-block mt-4">
+  <p class="text-center mt-3">额，什么都没有哦~</p>
+</div>
+<!-- 帖子列表 -->
+<ul class="list-unstyled">
+  <li class="media pb-3 pt-3 mb-3 border-bottom" th:each="map:${discussPosts}">
+```
