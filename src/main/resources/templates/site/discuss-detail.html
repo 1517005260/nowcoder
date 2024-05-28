@@ -75,7 +75,7 @@
 								</a>
 							</li>
 							<li class="d-inline ml-2">|</li>
-							<li class="d-inline ml-2"><a href="#replyform" class="text-primary">回帖
+							<li class="d-inline ml-2"><a href="#replyform" class="text-primary">评论
 								<i th:text="${post.commentCount}">7</i>
 							</a></li>
 						</ul>
@@ -92,10 +92,10 @@
 			<!-- 回帖数量 -->
 			<div class="row">
 				<div class="col-8">
-					<h6><b class="square"></b> <i th:text="${post.commentCount}">30</i>条回帖</h6>
+					<h6><b class="square"></b> <i th:text="${post.commentCount}">30</i>条评论</h6>
 				</div>
 				<div class="col-4 text-right">
-					<a href="#replyform" class="btn btn-primary btn-sm">&nbsp;&nbsp;回&nbsp;&nbsp;帖&nbsp;&nbsp;</a>
+					<a href="#replyform" class="btn btn-primary btn-sm">&nbsp;&nbsp;评&nbsp;&nbsp;论&nbsp;&nbsp;</a>
 				</div>
 			</div>
 			<!-- 回帖列表 -->
@@ -171,9 +171,10 @@
 												<input type="hidden" name="entityType" value="2"> <!--评论-->
 												<input type="hidden" name="entityId" th:value="${cvo.comment.id}">
 												<input type="hidden" name="targetId" th:value="${rvo.user.id}">
+												<button type="button" class="btn btn-light btn-sm emoji-button-reply">😊</button>
 											</div>
 											<div class="text-right mt-2">
-												<button type="submit" class="btn btn-primary btn-sm" onclick="#">&nbsp;&nbsp;回&nbsp;&nbsp;复&nbsp;&nbsp;</button>
+												<button type="submit" class="btn btn-primary btn-sm">&nbsp;&nbsp;回&nbsp;&nbsp;复&nbsp;&nbsp;</button>
 											</div>
 										</form>
 									</div>
@@ -183,12 +184,13 @@
 							<li class="pb-3 pt-3">
 								<form method="post" th:action="@{|/comment/add/${post.id}|}">
 									<div>
-										<input type="text" class="input-size"  name="content" placeholder="和大家一起讨论吧~ @用户记得加空格哦~" required>
+										<textarea class="input-size" name="content" placeholder="和大家一起讨论吧~ @用户记得加空格哦~" required></textarea>
 										<input type="hidden" name="entityType" value="2"> <!--评论-->
 										<input type="hidden" name="entityId" th:value="${cvo.comment.id}">
+										<button type="button" class="btn btn-light btn-sm emoji-button-reply">😊</button>
 									</div>
 									<div class="text-right mt-2">
-										<button type="submit" class="btn btn-primary btn-sm" onclick="#">&nbsp;&nbsp;回&nbsp;&nbsp;复&nbsp;&nbsp;</button>
+										<button type="submit" class="btn btn-primary btn-sm">&nbsp;&nbsp;回&nbsp;&nbsp;复&nbsp;&nbsp;</button>
 									</div>
 								</form>
 							</li>
@@ -205,12 +207,13 @@
 			<form class="replyform" method="post" th:action="@{|/comment/add/${post.id}|}">
 				<p class="mt-3">
 					<a name="replyform"></a>
-					<textarea placeholder="在这里畅所欲言你的看法吧! @用户记得加空格哦~" name="content" required></textarea>
+					<textarea placeholder="在这里畅所欲言你的看法吧! @用户记得加空格哦~" name="content" id="comment-content" required></textarea>
 					<input type="hidden" name="entityType" value="1"> <!--帖子-->
 					<input type="hidden" name="entityId" th:value="${post.id}">
+					<button type="button" id="emoji-button-comment" class="btn btn-light">😊</button>
 				</p>
 				<p class="text-right">
-					<button type="submit" class="btn btn-primary btn-sm">&nbsp;&nbsp;回&nbsp;&nbsp;帖&nbsp;&nbsp;</button>
+					<button type="submit" class="btn btn-primary btn-sm">&nbsp;&nbsp;评&nbsp;&nbsp;论&nbsp;&nbsp;</button>
 				</p>
 			</form>
 		</div>
@@ -233,7 +236,20 @@
 <script th:src="@{/editor-md/lib/sequence-diagram.min.js}"></script>
 <script th:src="@{/editor-md/lib/flowchart.min.js}"></script>
 <script th:src="@{/editor-md/lib/jquery.flowchart.min.js}"></script>
+<script src="https://unpkg.com/emoji-button@latest/dist/index.js"></script>
 <script type="text/javascript">
+	var testEditor;
+	$(function () {
+		testEditor = editormd.markdownToHTML("md-content", {
+			htmlDecode: "style,script,iframe",
+			emoji: true,
+			taskList: true,
+			tex: true,
+			flowChart: true,
+			sequenceDiagram: true,
+			codeFold: true
+		});
+	});
 	document.addEventListener('DOMContentLoaded', function() {
 		// 获取所有评论内容的元素
 		var comments = document.querySelectorAll('.comment-content, .reply-content');
@@ -305,16 +321,39 @@
 	});
 </script>
 <script>
-	var testEditor;
-	$(function () {
-		testEditor = editormd.markdownToHTML("md-content", {
-			htmlDecode: "style,script,iframe",
-			emoji: true,
-			taskList: true,
-			tex: true,
-			flowChart: true,
-			sequenceDiagram: true,
-			codeFold: true
+	document.addEventListener('DOMContentLoaded', function () {
+		const button = document.querySelector('#emoji-button-comment');
+		const picker = new EmojiButton();
+
+		picker.on('emoji', emoji => {
+			const textarea = document.querySelector('#comment-content');
+			textarea.value += emoji;
+		});
+
+		button.addEventListener('click', () => {
+			picker.showPicker(button);
+		});
+	});
+	document.addEventListener('DOMContentLoaded', function () {
+		const buttons = document.querySelectorAll('.emoji-button-reply');
+
+		buttons.forEach(button => {
+			const picker = new EmojiButton();
+			const form = button.closest('form');
+
+			picker.on('emoji', emoji => {
+				const textarea = form.querySelector('textarea');
+				const inputField = form.querySelector('input[name="content"]');
+				if (textarea) {
+					textarea.value += emoji;
+				} else if (inputField) {
+					inputField.value += emoji;
+				}
+			});
+
+			button.addEventListener('click', () => {
+				picker.showPicker(button);
+			});
 		});
 	});
 </script>
