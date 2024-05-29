@@ -255,6 +255,22 @@ public class UserService implements CommunityConstant {
         clearCache(userId);
     }
 
+    public Map<String, Object> updateUserSaying(int userId, String saying){
+        Map<String, Object> map = new HashMap<>();
+        saying = sensitiveFilter.filter(saying);
+        if(saying == null){
+            map.put("errorMsg", "新简介不能为空！");
+            return map;
+        }
+        if(saying.length() > 255){
+            map.put("errorMsg", "简介过长！");
+            return map;
+        }
+        userMapper.updateSaying(userId, saying);
+        clearCache(userId);
+        return map;
+    }
+
     // 用户名查用户
     public User findUserByName(String username){
         return userMapper.selectByName(username);

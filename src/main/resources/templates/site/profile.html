@@ -60,14 +60,24 @@
 							<span class="status-badge" th:if="${user.type==1}">管理员</span>
 							<span class="status-badge" th:if="${user.type==2}">版主</span>
 							<span style="position:absolute;left: 1000px">
-								<input type="hidden" id="entityId" th:value="${user.id}">
-								<button type="button"
-										th:class="|btn ${hasFollowed?'btn-secondary':'btn-info'} btn-sm follow-btn|"
-										th:text="${hasFollowed?'已关注':'关注TA'}"
-										th:if="${loginUser!=null && loginUser.id!=user.id}"
-								>关注TA</button>
-							</span>
+							<input type="hidden" id="entityId" th:value="${user.id}">
+							<button type="button"
+									th:class="|btn ${hasFollowed?'btn-secondary':'btn-info'} btn-sm follow-btn|"
+									th:text="${hasFollowed?'已关注':'关注TA'}"
+									th:if="${loginUser!=null && loginUser.id!=user.id}"
+							>关注TA</button>
+						</span>
 						</h5>
+						<div class="text-muted mt-3">
+							<a th:if="${loginUser.id == user.id}" th:href="@{/user/setting}" style="color: rgb(109,117,125)">
+								<span th:if="${user.saying != null}" th:utext="${user.saying}"></span>
+								<span th:if="${user.saying == null}" th:text="'这个人很懒，什么都没有写~'"></span>
+							</a>
+							<span th:if="${loginUser.id != user.id}">
+							<span th:if="${user.saying != null}" th:utext="${user.saying}"></span>
+							<span th:if="${user.saying == null}" th:text="'这个人很懒，什么都没有写~'"></span>
+							</span>
+						</div>
 						<div class="text-muted mt-3">
 							<span style="margin-right: 20px;">uid: <i class="text-muted" th:text="${user.id}"></i></span>
 							<span style="margin-left: 35px;">注册于 <i class="text-muted" th:text="${#dates.format(user.createTime, 'yyyy-MM-dd HH:mm:ss')}">2015-06-12 15:20:12</i></span>

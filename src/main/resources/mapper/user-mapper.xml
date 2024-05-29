@@ -6,10 +6,10 @@
 <mapper namespace="com.nowcoder.community.dao.UserMapper">
     <!--select 字段标记-->
     <sql id="selectFields">
-        id, username, password, salt, email, type, status, activation_code, header_url, create_time
+        id, username, password, salt, email, type, status, activation_code, header_url, create_time,saying
     </sql>
     <sql id="insertFields">
-        username, password, salt, email, type, status, activation_code, header_url, create_time
+        username, password, salt, email, type, status, activation_code, header_url, create_time <!--默认不插入saying-->
     </sql>
 
     <!--每个标签对应一个接口中的函数-->
@@ -63,6 +63,12 @@
     <update id="updateType">
         update user
         set type = #{type}
+        where id = #{id}
+    </update>
+
+    <update id="updateSaying">
+        update user
+        set saying = #{saying}
         where id = #{id}
     </update>
 

@@ -23,6 +23,8 @@ public class User {
     private String headerUrl;
     @Field(type = FieldType.Date)
     private Date createTime;
+    @Field(type = FieldType.Text)
+    private String saying;
 
     public int getId() {
         return id;
@@ -104,6 +106,14 @@ public class User {
         this.createTime = createTime;
     }
 
+    public String getSaying() {
+        return saying;
+    }
+
+    public void setSaying(String saying) {
+        this.saying = saying;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -117,6 +127,7 @@ public class User {
                 ", activationCode='" + activationCode + '\'' +
                 ", headerUrl='" + headerUrl + '\'' +
                 ", createTime=" + createTime +
+                ", saying='" + saying + '\'' +
                 '}';
     }
 }

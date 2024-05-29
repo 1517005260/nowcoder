@@ -137,6 +137,23 @@ public class UserController implements CommunityConstant {
     }
 
     @LoginRequired
+    @RequestMapping(path = "/updateSaying", method = RequestMethod.POST)
+    public String updateSaying(String saying, Model model) {
+        User user = hostHolder.getUser();
+        Map<String, Object> map = userService.updateUserSaying(user.getId(), saying);
+        if (map == null || map.isEmpty()) {
+            Event event = new Event()
+                    .setTopic(TOPIC_UPDATE)
+                    .setUserId(user.getId());
+            eventProducer.fireEvent(event);
+            return "redirect:/user/profile/" + user.getId();
+        } else {
+            model.addAttribute("errorMsg", map.get("errorMsg"));
+            return "/site/setting";
+        }
+    }
+
+    @LoginRequired
     @RequestMapping(path = "/updateUsername", method = RequestMethod.POST)
     public String updateUsername(String username,Model model){
         User user = hostHolder.getUser();
@@ -146,7 +163,7 @@ public class UserController implements CommunityConstant {
                     .setTopic(TOPIC_UPDATE)
                     .setUserId(user.getId());
             eventProducer.fireEvent(event);
-            return "redirect:/logout";
+            return "redirect:/user/profile/" + user.getId();
         } else {
             model.addAttribute("errorMsg", map.get("errorMsg"));
             return "/site/setting";

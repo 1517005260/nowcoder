@@ -1,0 +1,156 @@
+# 用户简介
+
+1. User表新增一列saying
+
+```sql
+ALTER TABLE User ADD COLUMN saying VARCHAR(255);
+```
+
+2. User实体新增属性saying
+
+```java
+@Field(type = FieldType.Text)
+private String saying;
+
+public String getSaying() {
+    return saying;
+}
+
+public void setSaying(String saying) {
+    this.saying = saying;
+}
+
+@Override
+public String toString() {
+    return "User{" +
+            "id=" + id +
+            ", username='" + username + '\'' +
+            ", password='" + password + '\'' +
+            ", salt='" + salt + '\'' +
+            ", email='" + email + '\'' +
+            ", type=" + type +
+            ", status=" + status +
+            ", activationCode='" + activationCode + '\'' +
+            ", headerUrl='" + headerUrl + '\'' +
+            ", createTime=" + createTime +
+            ", saying='" + saying + '\'' +
+            '}';
+}
+```
+
+3. UserMapper新增接口：
+
+```java
+void updateSaying(int id, String saying);
+```
+
+sql实现：
+
+```xml
+<sql id="selectFields">
+    id, username, password, salt, email, type, status, activation_code, header_url, create_time,saying
+</sql>
+<sql id="insertFields">
+username, password, salt, email, type, status, activation_code, header_url, create_time <!--默认不插入saying-->
+</sql>
+
+<update id="updateSaying">
+update user
+set saying = #{saying}
+where id = #{id}
+</update>
+```
+
+4. UserService新增：
+
+```java
+public Map<String, Object> updateUserSaying(int userId, String saying){
+    Map<String, Object> map = new HashMap<>();
+    saying = sensitiveFilter.filter(saying);
+    if(saying.length() > 255){
+        map.put("errorMsg", "简介过长！");
+        return map;
+    }
+    userMapper.updateSaying(userId, saying);
+    clearCache(userId);
+    return map;
+}
+```
+
+5. UserController新增：
+
+```java
+@LoginRequired
+@RequestMapping(path = "/updateSaying", method = RequestMethod.POST)
+public String updateSaying(String saying ,Model model){
+    User user = hostHolder.getUser();
+    Map<String, Object> map = userService.updateUserSaying(user.getId(), saying);
+    if (map == null || map.isEmpty()) {
+        Event event = new Event()
+                .setTopic(TOPIC_UPDATE)
+                .setUserId(user.getId());
+        eventProducer.fireEvent(event);
+        return "redirect:/index";
+    } else {
+        model.addAttribute("errorMsg", map.get("errorMsg"));
+        return "/site/setting";
+    }
+}
+```
+
+Security配置：
+
+```java
+http.authorizeHttpRequests(authorize -> authorize.requestMatchers(
+         "/user/updateSaying", // 修改简介
+).hasAnyAuthority(         // 这些功能只要登录就行
+                           AUTHORITY_USER,
+                           AUTHORITY_ADMIN,
+                           AUTHORITY_MODERATOR
+                           )
+```
+
+6. 前端：
+
+profile：
+
+```html
+<div class="text-muted mt-3">
+    <a th:if="${loginUser.id == user.id}" th:href="@{/user/setting}" style="color: rgb(109,117,125)">
+        <span th:if="${user.saying != null}" th:utext="${user.saying}"></span>
+        <span th:if="${user.saying == null}" th:text="'这个人很懒，什么都没有写~'"></span>
+    </a>
+    <span th:if="${loginUser.id != user.id}">
+        <span th:if="${user.saying != null}" th:utext="${user.saying}"></span>
+        <span th:if="${user.saying == null}" th:text="'这个人很懒，什么都没有写~'"></span>
+    </span>
+</div>
+```
+
+setting:
+
+```html
+<!--修改简介-->
+<h6 class="text-left text-info border-bottom pb-2">修改简介</h6>
+<form class="mt-5" id="updateSaying" th:action="@{/user/updateSaying}" method="post">
+    <div class="form-group row mt-4">
+        <label for="head-image" class="col-sm-2 col-form-label text-right">更新简介:</label>
+        <div class="col-sm-10">
+            <div class="custom-file">
+                <input type="text"
+                       th:class="|form-control ${errorMsg!=null?'is-invalid':''}|"
+                       name="saying" placeholder="请输入新简介!" required>
+                <div class="invalid-feedback" th:text="${errorMsg}">
+                    该账号不存在!
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group row mt-4">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-10 text-center">
+            <button type="submit" class="btn btn-info text-white form-control">立即更改</button>
+        </div>
+    </div>
+</form>
+```

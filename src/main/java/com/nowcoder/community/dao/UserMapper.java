@@ -25,4 +25,6 @@ public interface UserMapper {
     int updateUsername(int id, String username);
 
     int updateType(int id, int type);
+
+    void updateSaying(int id, String saying);
 }
