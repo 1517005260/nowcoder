@@ -92,6 +92,8 @@ public String like(int entityType, int entityId, int entityUserId, int postId){
 }
 ```
 
+浏览由于过于频繁，故不放入redis里
+
 3. 处理加分事件——定时任务Quartz
 
 a. 写一个job——PostScoreRefreshJob
@@ -186,10 +188,16 @@ public class PostScoreRefreshJob implements Job , CommunityConstant {
     int commentCount = post.getCommentCount();
     // 点赞数
     long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, postId);
+    // 浏览数
+    Integer readCountInteger = (Integer) redisTemplate.opsForValue().get(RedisKeyUtil.getPostReadKey(postId));
+    long readCount = 0;
+    if (readCountInteger != null) {
+      readCount = Long.parseLong(readCountInteger.toString());
+    }
 
     // 计算分数
     // 1. log包含的数
-    double weight = (isWonderful ? 75 : 0) + 10 * commentCount + 2 * likeCount;
+    double weight = (isWonderful ? 75 : 0) + 10 * commentCount + 2 * likeCount + 0.1 * readCount;
     // 2. 计算score
     double score = Math.log10(Math.max(weight, 1))  // 注意log计算可能为负，这里需规避
             + (post.getCreateTime().getTime() - startDate.getTime()) / (1000 * 3600 * 24); // 毫秒换算为天

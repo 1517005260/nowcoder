@@ -9,7 +9,9 @@ import com.nowcoder.community.service.LikeService;
 import com.nowcoder.community.service.UserService;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.HostHolder;
+import com.nowcoder.community.util.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +41,9 @@ public class SearchController implements CommunityConstant {
     @Autowired
     private HostHolder hostHolder;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     // 路径格式：/search?keyword=xxx
     @RequestMapping(path = "/search", method = RequestMethod.GET)
     public String search(String keyword, Page page, Model model) {
@@ -56,6 +61,9 @@ public class SearchController implements CommunityConstant {
                 map.put("user", userService.findUserById(post.getUserId()));  // 作者
                 map.put("likeCount", likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId()));  // 赞数
                 map.put("contentPlainText", contentPlainText);  // Processed plain text content
+
+                String redisKey = RedisKeyUtil.getPostReadKey(post.getId());
+                map.put("postReadCount", redisTemplate.opsForValue().get(redisKey));
 
                 discussPosts.add(map);
             }

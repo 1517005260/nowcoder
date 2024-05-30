@@ -7,12 +7,14 @@ import com.nowcoder.community.service.*;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
+import com.nowcoder.community.util.RedisKeyUtil;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -70,6 +72,9 @@ public class UserController implements CommunityConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     // @用户用，获取用户的id
     @RequestMapping(path = "/id", method = RequestMethod.GET)
@@ -224,6 +229,8 @@ public class UserController implements CommunityConstant {
                 Map<String, Object> map = new HashMap<>();
                 map.put("post", post);
                 map.put("likeCount", likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId()));
+                String redisKey = RedisKeyUtil.getPostReadKey(post.getId());
+                map.put("postReadCount", redisTemplate.opsForValue().get(redisKey));
                 discussVOList.add(map);
             }
         }
@@ -284,6 +291,8 @@ public class UserController implements CommunityConstant {
                 Map<String, Object> map = new HashMap<>();
                 map.put("post", post);
                 map.put("likeCount", likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId()));
+                String redisKey = RedisKeyUtil.getPostReadKey(post.getId());
+                map.put("postReadCount", redisTemplate.opsForValue().get(redisKey));
                 discussVOList.add(map);
             }
         }
