@@ -6,7 +6,7 @@
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <link rel="icon" th:href="@{/img/icon.png}"/>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.min.css}" />
     <link rel="stylesheet" th:href="@{/css/global.css}" />
     <link rel="stylesheet" type="text/css" th:href="@{/editor-md/css/editormd.css}" />
     <title>修改帖子</title>
@@ -64,12 +64,12 @@
     </footer>
 
 </div>
-<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script th:src="@{/js/jquery-3.1.0.min.js}"></script>
+<script type="module" th:src="@{/js/popper.min.js}"></script>
+<script th:src="@{/js/bootstrap.min.js}"></script>
 <script th:src="@{/js/global.js}"></script>
 <script th:src="@{/editor-md/editormd.min.js}"></script>
-<script src="https://unpkg.com/emoji-button@latest/dist/index.js"></script>
+<script th:src="@{/js/emoji.js}"></script>
 <script type="text/javascript">
     var testEditor;
 
