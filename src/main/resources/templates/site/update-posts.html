@@ -83,6 +83,13 @@
             imageUpload: false,
             placeholder: "欢迎来到帖子编辑界面~ 本论坛支持 Markdown/非Markdown 格式的帖子~"
         });
+
+        // 拦截 @ 符号输入
+        $('#test-editormd').on('keypress', function(e) {
+            if (e.which === 64) { // ASCII code for @
+                e.preventDefault();
+            }
+        });
     });
 
     $(function() {
