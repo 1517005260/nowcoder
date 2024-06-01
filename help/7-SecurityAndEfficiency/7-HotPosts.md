@@ -499,7 +499,7 @@ public String getIndexPage(Model model, Page page,
   if (orderMode == 2) {
     User user = hostHolder.getUser();
     if (user == null) {
-      return "/error/404";
+      return "/site/login";
     }
     int cnt = discussPostService.findFolloweePostCount(user.getId());
     page.setRows(cnt);
@@ -547,4 +547,168 @@ public String getIndexPage(Model model, Page page,
 <!-- 帖子列表 -->
 <ul class="list-unstyled">
   <li class="media pb-3 pt-3 mb-3 border-bottom" th:each="map:${discussPosts}">
+```
+
+## 关注未读——redis
+
+如果用户的关注者新发布了帖子，用redis存储该信息，在用户的首页“关注”页签显示红点，用户点击“关注”页签后红点消失，删除redis数据
+
+1. redisKey新增
+
+```java
+private static final String PREFIX_POST_UNREAD = "post:unread";
+
+// 用户关注未读
+// post:unread:userId -> Zset(postId, create_time)
+public static String getFolloweePostUnreadKey(int userId) {
+  return PREFIX_POST_UNREAD + SPLIT + userId;
+}
+```
+
+2. DiscussPostService新增：
+
+```java
+// 通知粉丝有未读帖子
+public void notifyFollowersNewPost(int userId, int postId) {
+  String followerKey = RedisKeyUtil.getFollowerKey(ENTITY_TYPE_USER, userId);
+  Set<Integer> followerIds = redisTemplate.opsForZSet().range(followerKey, 0, -1);
+  if (followerIds != null) {
+    for (int followerId : followerIds) {
+      String unreadKey = RedisKeyUtil.getFolloweePostUnreadKey(followerId);
+      redisTemplate.opsForZSet().add(unreadKey, postId, System.currentTimeMillis());
+    }
+  }
+}
+
+
+// 检查是否有未读的帖子
+public boolean hasUnreadPosts(int userId) {
+  String unreadKey = RedisKeyUtil.getFolloweePostUnreadKey(userId);
+  Long count = redisTemplate.opsForZSet().zCard(unreadKey);
+  return count != null && count > 0;
+}
+
+// 删除未读帖子的标记
+public void clearUnreadPosts(int userId) {
+  String unreadKey = RedisKeyUtil.getFolloweePostUnreadKey(userId);
+  redisTemplate.delete(unreadKey);
+}
+```
+
+3. HomeController更改
+
+```java
+@RequestMapping(path = "/index", method = RequestMethod.GET)
+public String getIndexPage(Model model, Page page,
+                           @RequestParam(name = "orderMode", defaultValue = "1")int orderMode){ // 默认热帖排序
+
+  //方法调用前，SpringMVC会自动实例化Model和Page，并将Page注入Model
+  //所以不用model.addAttribute(Page),直接在thymeleaf可以访问Page的数据
+  User user = hostHolder.getUser();
+  if (user != null) {
+    boolean hasUnreadPosts = discussPostService.hasUnreadPosts(user.getId());
+    model.addAttribute("hasUnreadPosts", hasUnreadPosts);
+  }
+
+  List<DiscussPost> list = new ArrayList<>();
+  if (orderMode == 2) {
+    if (user == null) {
+      return "/site/login";
+    }
+    int cnt = discussPostService.findFolloweePostCount(user.getId());
+    page.setRows(cnt);
+    list = discussPostService.findFolloweePosts(user.getId(), page.getOffset(), page.getLimit());
+    // 清除未读帖子标记
+    discussPostService.clearUnreadPosts(user.getId());
+  } else {
+    page.setRows(discussPostService.findDiscussPostRows(0));
+    // 默认是第一页，前10个帖子
+    list = discussPostService.findDiscussPosts(0, page.getOffset(), page.getLimit(), orderMode);
+  }
+  page.setPath("/index?orderMode=" + orderMode);
+
+  // 将前10个帖子和对应的user对象封装
+  List<Map<String, Object>> discussPosts = new ArrayList<>();
+  if(list !=null){
+    for(DiscussPost post:list){
+      Map<String,Object> map = new HashMap<>();
+      map.put("post" , post);
+      user = userService.findUserById(post.getUserId());
+      map.put("user", user);
+
+      long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId());
+      map.put("likeCount",likeCount);
+
+      String redisKey = RedisKeyUtil.getPostReadKey(post.getId());
+      Object readCountObj = redisTemplate.opsForValue().get(redisKey);
+      Integer readCount = null;
+      if (readCountObj != null) {
+        readCount = (Integer) readCountObj;
+      } else {
+        DiscussPost dbPost = discussPostMapper.selectDiscussPostById(post.getId());
+        if (dbPost != null) {
+          readCount = dbPost.getReadCount();
+          redisTemplate.opsForValue().set(redisKey, readCount);
+        } else {
+          readCount = 0;
+        }
+      }
+      map.put("postReadCount", readCount);
+
+      discussPosts.add(map);
+    }
+  }
+  // 处理完的数据填充给前端页面
+  model.addAttribute("discussPosts", discussPosts);
+  model.addAttribute("orderMode", orderMode);
+  return "/index";
+}
+```
+
+DiscussPostController更改：
+
+```java
+//处理增加帖子异步请求
+@RequestMapping(path = "/add", method = RequestMethod.POST)
+@ResponseBody
+public String addDiscussPost(String title, String content){
+    User user = hostHolder.getUser();
+    if(user == null){
+        return CommunityUtil.getJSONString(403, "你还没有登录哦!");  // 403表示没有权限
+    }
+    DiscussPost discussPost = new DiscussPost();
+    discussPost.setUserId(user.getId());
+    discussPost.setTitle(title);
+    discussPost.setContent(content);
+    discussPost.setCreateTime(new Date());
+    discussPostService.addDiscussPost(discussPost);
+
+    // 通知所有粉丝有新帖子
+    discussPostService.notifyFollowersNewPost(user.getId(), discussPost.getId());
+
+    // 发帖事件，存进es服务器
+    Event event = new Event()
+            .setTopic(TOPIC_PUBLISH)
+            .setUserId(user.getId())
+            .setEntityType(ENTITY_TYPE_POST)
+            .setEntityId(discussPost.getId());
+    eventProducer.fireEvent(event);
+
+    // 初始分数计算
+    String redisKey = RedisKeyUtil.getPostScoreKey();
+    redisTemplate.opsForSet().add(redisKey, discussPost.getId());
+
+    return CommunityUtil.getJSONString(0, "发布成功！");
+}
+```
+
+4. index前端
+
+```html
+<li class="nav-item">
+    <a th:class="|nav-link ${orderMode == 2 ? 'active' : ''}|" th:href="@{/index(orderMode=2)}" th:if="${loginUser != null}">
+        关注
+        <span th:if="${loginUser != null && hasUnreadPosts}" class="badge badge-danger">新</span>
+    </a>
+</li>
 ```

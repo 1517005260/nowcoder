@@ -19,6 +19,7 @@ public class RedisKeyUtil {
     private static final String PREFIX_DAU = "dau";
     private static final String PREFIX_POST = "post";
     private static final String PREFIX_POST_READ = "post:read";
+    private static final String PREFIX_POST_UNREAD = "post:unread";
 
     // 某个实体的赞
     // like:entity:entityType:entityId -> set(userId) （方便统计谁赞了、赞的数量等）
@@ -95,5 +96,11 @@ public class RedisKeyUtil {
     // post:read:postId -> int
     public static String getPostReadKey(int postId){
         return PREFIX_POST_READ + SPLIT + postId;
+    }
+
+    // 用户关注未读
+    // post:unread:userId -> Zset(postId, create_time)
+    public static String getFolloweePostUnreadKey(int userId) {
+        return PREFIX_POST_UNREAD + SPLIT + userId;
     }
 }

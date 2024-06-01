@@ -148,4 +148,30 @@ public class DiscussPostService implements CommunityConstant {
         }
         logger.info("阅读量写入MySQL任务结束！");
     }
+
+    // 通知粉丝有未读帖子
+    public void notifyFollowersNewPost(int userId, int postId) {
+        String followerKey = RedisKeyUtil.getFollowerKey(ENTITY_TYPE_USER, userId);
+        Set<Integer> followerIds = redisTemplate.opsForZSet().range(followerKey, 0, -1);
+        if (followerIds != null) {
+            for (int followerId : followerIds) {
+                String unreadKey = RedisKeyUtil.getFolloweePostUnreadKey(followerId);
+                redisTemplate.opsForZSet().add(unreadKey, postId, System.currentTimeMillis());
+            }
+        }
+    }
+
+
+    // 检查是否有未读的帖子
+    public boolean hasUnreadPosts(int userId) {
+        String unreadKey = RedisKeyUtil.getFolloweePostUnreadKey(userId);
+        Long count = redisTemplate.opsForZSet().zCard(unreadKey);
+        return count != null && count > 0;
+    }
+
+    // 删除未读帖子的标记
+    public void clearUnreadPosts(int userId) {
+        String unreadKey = RedisKeyUtil.getFolloweePostUnreadKey(userId);
+        redisTemplate.delete(unreadKey);
+    }
 }

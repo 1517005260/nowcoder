@@ -63,6 +63,9 @@ public class DiscussPostController implements CommunityConstant {
         discussPost.setCreateTime(new Date());
         discussPostService.addDiscussPost(discussPost);
 
+        // 通知所有粉丝有新帖子
+        discussPostService.notifyFollowersNewPost(user.getId(), discussPost.getId());
+
         // 发帖事件，存进es服务器
         Event event = new Event()
                 .setTopic(TOPIC_PUBLISH)

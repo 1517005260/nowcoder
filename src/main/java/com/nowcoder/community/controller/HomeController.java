@@ -48,16 +48,22 @@ public class HomeController implements CommunityConstant {
 
         //方法调用前，SpringMVC会自动实例化Model和Page，并将Page注入Model
         //所以不用model.addAttribute(Page),直接在thymeleaf可以访问Page的数据
+        User user = hostHolder.getUser();
+        if (user != null) {
+            boolean hasUnreadPosts = discussPostService.hasUnreadPosts(user.getId());
+            model.addAttribute("hasUnreadPosts", hasUnreadPosts);
+        }
 
         List<DiscussPost> list = new ArrayList<>();
         if (orderMode == 2) {
-            User user = hostHolder.getUser();
             if (user == null) {
                 return "/site/login";
             }
             int cnt = discussPostService.findFolloweePostCount(user.getId());
             page.setRows(cnt);
             list = discussPostService.findFolloweePosts(user.getId(), page.getOffset(), page.getLimit());
+            // 清除未读帖子标记
+            discussPostService.clearUnreadPosts(user.getId());
         } else {
             page.setRows(discussPostService.findDiscussPostRows(0));
             // 默认是第一页，前10个帖子
@@ -71,7 +77,7 @@ public class HomeController implements CommunityConstant {
             for(DiscussPost post:list){
                 Map<String,Object> map = new HashMap<>();
                 map.put("post" , post);
-                User user = userService.findUserById(post.getUserId());
+                user = userService.findUserById(post.getUserId());
                 map.put("user", user);
 
                 long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId());

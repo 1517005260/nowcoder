@@ -80,7 +80,10 @@
 				<!-- 筛选条件 -->
 				<ul class="nav nav-tabs mb-3">
 					<li class="nav-item">
-						<a th:class="|nav-link ${orderMode==2?'active' :''}|" th:href="@{/index(orderMode=2)}" th:if="${loginUser!=null}">关注</a>
+						<a th:class="|nav-link ${orderMode == 2 ? 'active' : ''}|" th:href="@{/index(orderMode=2)}" th:if="${loginUser != null}">
+							关注
+							<span th:if="${loginUser != null && hasUnreadPosts}" class="badge badge-danger">新</span>
+						</a>
 					</li>
 					<li class="nav-item">
 						<a th:class="|nav-link ${orderMode==1?'active':''}|" th:href="@{/index(orderMode=1)}">最热</a>
