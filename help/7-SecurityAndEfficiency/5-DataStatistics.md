@@ -357,25 +357,37 @@ public List<Long> getDAUChartData(Date start, Date end) {
 }
 ```
 
-2. DataController新增：
+2. DataController改动：同时显示总数和图表
 
 ```java
-@RequestMapping(path = "/data/uv/chart", method = RequestMethod.POST)
+// 统计 UV 并获取图表数据
+@RequestMapping(path = "/data/uv", method = RequestMethod.POST)
 @ResponseBody
-public String getUVChartData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
-                             @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
-    List<Long> uvData = dataService.getUVChartData(start, end);
-    return CommunityUtil.getJSONString(0, "success", Map.of("uvData", uvData));
+public String getUVData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+                        @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
+  if (start == null || end == null || start.after(end)) {
+    return CommunityUtil.getJSONString(1, "参数不能为空且开始日期不能晚于结束日期！");
+  }
+
+  long uv = dataService.calculateUV(start, end);
+  List<Long> uvData = dataService.getUVChartData(start, end);
+
+  return CommunityUtil.getJSONString(0, "success", Map.of("uvResult", uv, "uvData", uvData));
 }
 
-// 获取 DAU 数据
-@RequestMapping(path = "/data/dau/chart", method = RequestMethod.POST)
+// 统计 DAU 并获取图表数据
+@RequestMapping(path = "/data/dau", method = RequestMethod.POST)
 @ResponseBody
-public String getDAUChartData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
-                              @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
-    List<Long> dauData = dataService.getDAUChartData(start, end);
-    System.out.println(dauData);
-    return CommunityUtil.getJSONString(0, "success", Map.of("dauData", dauData));
+public String getDAUData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+                         @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
+  if (start == null || end == null || start.after(end)) {
+    return CommunityUtil.getJSONString(1, "参数不能为空且开始日期不能晚于结束日期！");
+  }
+
+  long dau = dataService.calculateDAU(start, end);
+  List<Long> dauData = dataService.getDAUChartData(start, end);
+
+  return CommunityUtil.getJSONString(0, "success", Map.of("dauResult", dau, "dauData", dauData));
 }
 ```
 
@@ -385,60 +397,60 @@ public String getDAUChartData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date start
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="_csrf" th:content="${_csrf.token}">
-  <meta name="_csrf_header" th:content="${_csrf.headerName}">
-  <link rel="icon" th:href="@{/img/icon.png}"/>
-  <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.min.css}" />
-  <link rel="stylesheet" th:href="@{/css/global.css}" />
-  <title>数据统计</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="_csrf" th:content="${_csrf.token}">
+	<meta name="_csrf_header" th:content="${_csrf.headerName}">
+	<link rel="icon" th:href="@{/img/icon.png}"/>
+	<link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.min.css}" />
+	<link rel="stylesheet" th:href="@{/css/global.css}" />
+	<title>数据统计</title>
 </head>
 <body>
 <div class="nk-container">
-  <!-- 头部 -->
-  <header class="bg-dark sticky-top" th:replace="index::header">
-  </header>
+	<!-- 头部 -->
+	<header class="bg-dark sticky-top" th:replace="index::header">
+	</header>
 
-  <!-- 内容 -->
-  <div class="main">
-    <!-- 网站UV -->
-    <div class="container pl-5 pr-5 pt-3 pb-3 mt-3">
-      <h6 class="mt-3"><b class="square"></b> 网站 UV</h6>
-      <form class="form-inline mt-3" method="post">
-        <input type="date" class="form-control" required name="start" th:value="${#dates.format(uvStartDate, 'yyyy-MM-dd')}" id="uvStartDate" />
-        <input type="date" class="form-control ml-3" required name="end" th:value="${#dates.format(uvEndDate, 'yyyy-MM-dd')}" id="uvEndDate" />
-        <button type="button" class="btn btn-primary ml-3" id="uvButton">开始统计</button>
-      </form>
-      <ul class="list-group mt-3 mb-3">
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          统计结果
-          <span class="badge badge-primary badge-danger font-size-14" th:text="${uvResult}">0</span>
-        </li>
-      </ul>
-      <div id="uv-chart" style="width: 100%;height:400px;"></div>
-    </div>
+	<!-- 内容 -->
+	<div class="main">
+		<!-- 网站UV -->
+		<div class="container pl-5 pr-5 pt-3 pb-3 mt-3">
+			<h6 class="mt-3"><b class="square"></b> 网站 UV</h6>
+			<form class="form-inline mt-3" method="post">
+				<input type="date" class="form-control" required name="start" th:value="${#dates.format(uvStartDate, 'yyyy-MM-dd')}" id="uvStartDate" />
+				<input type="date" class="form-control ml-3" required name="end" th:value="${#dates.format(uvEndDate, 'yyyy-MM-dd')}" id="uvEndDate" />
+				<button type="button" class="btn btn-primary ml-3" id="uvButton">开始统计</button>
+			</form>
+			<ul class="list-group mt-3 mb-3">
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					统计结果
+					<span class="badge badge-primary badge-danger font-size-14" id="uvResult">0</span>
+				</li>
+			</ul>
+			<div id="uv-chart" style="width: 100%;height:400px;"></div>
+		</div>
 
-    <div class="container pl-5 pr-5 pt-3 pb-3 mt-4">
-      <h6 class="mt-3"><b class="square"></b> 活跃用户</h6>
-      <form class="form-inline mt-3" method="post">
-        <input type="date" class="form-control" required name="start" th:value="${#dates.format(dauStartDate, 'yyyy-MM-dd')}" id="dauStartDate" />
-        <input type="date" class="form-control ml-3" required name="end" th:value="${#dates.format(dauEndDate, 'yyyy-MM-dd')}" id="dauEndDate" />
-        <button type="button" class="btn btn-primary ml-3" id="dauButton">开始统计</button>
-      </form>
-      <ul class="list-group mt-3 mb-3">
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          统计结果
-          <span class="badge badge-primary badge-danger font-size-14" th:text="${dauResult}">0</span>
-        </li>
-      </ul>
-      <div id="dau-chart" style="width: 100%;height:400px;"></div>
-    </div>
-  </div>
+		<div class="container pl-5 pr-5 pt-3 pb-3 mt-4">
+			<h6 class="mt-3"><b class="square"></b> 活跃用户</h6>
+			<form class="form-inline mt-3" method="post">
+				<input type="date" class="form-control" required name="start" th:value="${#dates.format(dauStartDate, 'yyyy-MM-dd')}" id="dauStartDate" />
+				<input type="date" class="form-control ml-3" required name="end" th:value="${#dates.format(dauEndDate, 'yyyy-MM-dd')}" id="dauEndDate" />
+				<button type="button" class="btn btn-primary ml-3" id="dauButton">开始统计</button>
+			</form>
+			<ul class="list-group mt-3 mb-3">
+				<li class="list-group-item d-flex justify-content-between align-items-center">
+					统计结果
+					<span class="badge badge-primary badge-danger font-size-14" id="dauResult">0</span>
+				</li>
+			</ul>
+			<div id="dau-chart" style="width: 100%;height:400px;"></div>
+		</div>
+	</div>
 
-  <!-- 尾部 -->
-  <footer class="bg-dark" th:replace="index::footer">
-  </footer>
+	<!-- 尾部 -->
+	<footer class="bg-dark" th:replace="index::footer">
+	</footer>
 </div>
 
 <script th:src="@{/js/jquery-3.1.0.min.js}"></script>
@@ -446,99 +458,103 @@ public String getDAUChartData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date start
 <script th:src="@{/js/bootstrap.min.js}"></script>
 <script th:src="@{/js/global.js}"></script>
 <script th:src="@{/js/echarts.min.js}"></script>
-<script>
-  $(document).ready(function () {
-    var uvChart = echarts.init(document.getElementById('uv-chart'));
-    var dauChart = echarts.init(document.getElementById('dau-chart'));
+<script th:inline="javascript">
+	$(document).ready(function () {
+		var uvChart = echarts.init(document.getElementById('uv-chart'));
+		var dauChart = echarts.init(document.getElementById('dau-chart'));
 
-    let token = $("meta[name= '_csrf']").attr("content");
-    let header = $("meta[name= '_csrf_header']").attr("content");
-    $(document).ajaxSend(function (e, xhr, options){
-      xhr.setRequestHeader(header, token);
-    });
+		let token = $("meta[name= '_csrf']").attr("content");
+		let header = $("meta[name= '_csrf_header']").attr("content");
+		$(document).ajaxSend(function (e, xhr, options){
+			xhr.setRequestHeader(header, token);
+		});
 
-    // UV 图表配置
-    function loadUVChart(start, end) {
-      if (!validateDates(start, end)) {
-        alert("开始日期不能晚于结束日期！并且日期不能为空！");
-        return;
-      }
-      $.post(
-              CONTEXT_PATH + "/data/uv/chart",
-              {"start": start, "end": end},
-              function (data) {
-                var dates = getDates(start, end);
-                var response = JSON.parse(data);
-                uvChart.setOption({
-                  title: { text: '网站 UV 统计' },
-                  tooltip: { trigger: 'axis' },
-                  xAxis: { type: 'category', data: dates },
-                  yAxis: { type: 'value' },
-                  series: [{ data: response["uvData"], type: 'line' }]
-                });
-                uvChart.resize(); // 调整图表大小
-              }
-      ).fail(function(jqXHR, textStatus, errorThrown) {
-        console.log("AJAX 请求失败:", textStatus, errorThrown);
-      });
-    }
+		// 验证日期
+		function validateDates(start, end) {
+			return new Date(start) <= new Date(end);
+		}
 
-    // DAU 图表配置
-    function loadDAUChart(start, end) {
-      if (!validateDates(start, end)) {
-        alert("开始日期不能晚于结束日期！并且日期不能为空！");
-        return;
-      }
-      $.post(
-              CONTEXT_PATH + "/data/dau/chart",
-              {"start": start, "end": end},
-              function (data) {
-                var dates = getDates(start, end);
-                var response = JSON.parse(data);
-                dauChart.setOption({
-                  title: { text: '活跃用户统计' },
-                  tooltip: { trigger: 'axis' },
-                  xAxis: { type: 'category', data: dates },
-                  yAxis: { type: 'value' },
-                  series: [{ data: response["dauData"], type: 'line' }]
-                });
-                dauChart.resize(); // 调整图表大小
-              }
-      ).fail(function(jqXHR, textStatus, errorThrown) {
-        console.log("AJAX 请求失败:", textStatus, errorThrown);
-      });
-    }
+		// 加载 UV 图表和总数
+		function loadUVChart(start, end) {
+			if (!validateDates(start, end)) {
+				alert("开始日期不能晚于结束日期！");
+				return;
+			}
+			$.post(
+					CONTEXT_PATH + "/data/uv",
+					{"start": start, "end": end},
+					function (response) {
+						var dates = getDates(start, end);
+						response = JSON.parse(response);
+						uvChart.setOption({
+							title: { text: '网站 UV 统计' },
+							tooltip: { trigger: 'axis' },
+							xAxis: { type: 'category', data: dates },
+							yAxis: { type: 'value' },
+							series: [{ data: response["uvData"], type: 'line' }]
+						});
+						uvChart.resize(); // 调整图表大小
+						// 更新总数
+						$("#uvResult").text(response["uvResult"]);
+					}
+			).fail(function(jqXHR, textStatus, errorThrown) {
+				console.log("AJAX 请求失败:", textStatus, errorThrown);
+			});
+		}
 
-    // 获取日期数组
-    function getDates(start, end) {
-      var dates = [];
-      var currentDate = new Date(start);
-      var endDate = new Date(end);
-      while (currentDate <= endDate) {
-        dates.push(currentDate.toISOString().split('T')[0]);
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-      return dates;
-    }
+		// 加载 DAU 图表和总数
+		function loadDAUChart(start, end) {
+			if (!validateDates(start, end)) {
+				alert("开始日期不能晚于结束日期！");
+				return;
+			}
+			$.post(
+					CONTEXT_PATH + "/data/dau",
+					{"start": start, "end": end},
+					function (response) {
+						var dates = getDates(start, end);
+						response = JSON.parse(response)
+						dauChart.setOption({
+							title: { text: '活跃用户统计' },
+							tooltip: { trigger: 'axis' },
+							xAxis: { type: 'category', data: dates },
+							yAxis: { type: 'value' },
+							series: [{ data: response["dauData"], type: 'line' }]
+						});
+						dauChart.resize(); // 调整图表大小
+						// 更新总数
+						$("#dauResult").text(response["dauResult"]);
+					}
+			).fail(function(jqXHR, textStatus, errorThrown) {
+				console.log("AJAX 请求失败:", textStatus, errorThrown);
+			});
+		}
 
-    // 验证日期
-    function validateDates(start, end) {
-      return new Date(start) <= new Date(end);
-    }
+		// 获取日期数组
+		function getDates(start, end) {
+			var dates = [];
+			var currentDate = new Date(start);
+			var endDate = new Date(end);
+			while (currentDate <= endDate) {
+				dates.push(currentDate.toISOString().split('T')[0]);
+				currentDate.setDate(currentDate.getDate() + 1);
+			}
+			return dates;
+		}
 
-    // 按钮点击事件绑定
-    $("#uvButton").click(function () {
-      var uvStartDate = $("#uvStartDate").val();
-      var uvEndDate = $("#uvEndDate").val();
-      loadUVChart(uvStartDate, uvEndDate);
-    });
+		// 按钮点击事件绑定
+		$("#uvButton").click(function () {
+			var uvStartDate = $("#uvStartDate").val();
+			var uvEndDate = $("#uvEndDate").val();
+			loadUVChart(uvStartDate, uvEndDate);
+		});
 
-    $("#dauButton").click(function () {
-      var dauStartDate = $("#dauStartDate").val();
-      var dauEndDate = $("#dauEndDate").val();
-      loadDAUChart(dauStartDate, dauEndDate);
-    });
-  });
+		$("#dauButton").click(function () {
+			var dauStartDate = $("#dauStartDate").val();
+			var dauEndDate = $("#dauEndDate").val();
+			loadDAUChart(dauStartDate, dauEndDate);
+		});
+	});
 </script>
 </body>
 </html>
