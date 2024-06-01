@@ -1,5 +1,6 @@
 package com.nowcoder.community.controller;
 
+import com.nowcoder.community.dao.DiscussPostMapper;
 import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
@@ -38,6 +39,9 @@ public class HomeController implements CommunityConstant {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private DiscussPostMapper discussPostMapper;
+
     @RequestMapping(path = "/index", method = RequestMethod.GET)
     public String getIndexPage(Model model, Page page,
                                @RequestParam(name = "orderMode", defaultValue = "1")int orderMode){ // 默认热帖排序
@@ -49,7 +53,7 @@ public class HomeController implements CommunityConstant {
         if (orderMode == 2) {
             User user = hostHolder.getUser();
             if (user == null) {
-                return "/error/404";
+                return "/site/login";
             }
             int cnt = discussPostService.findFolloweePostCount(user.getId());
             page.setRows(cnt);
@@ -74,7 +78,20 @@ public class HomeController implements CommunityConstant {
                 map.put("likeCount",likeCount);
 
                 String redisKey = RedisKeyUtil.getPostReadKey(post.getId());
-                map.put("postReadCount", redisTemplate.opsForValue().get(redisKey));
+                Object readCountObj = redisTemplate.opsForValue().get(redisKey);
+                Integer readCount = null;
+                if (readCountObj != null) {
+                    readCount = (Integer) readCountObj;
+                } else {
+                    DiscussPost dbPost = discussPostMapper.selectDiscussPostById(post.getId());
+                    if (dbPost != null) {
+                        readCount = dbPost.getReadCount();
+                        redisTemplate.opsForValue().set(redisKey, readCount);
+                    } else {
+                        readCount = 0;
+                    }
+                }
+                map.put("postReadCount", readCount);
 
                 discussPosts.add(map);
             }

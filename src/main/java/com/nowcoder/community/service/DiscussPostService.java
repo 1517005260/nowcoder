@@ -6,6 +6,8 @@ import com.nowcoder.community.entity.User;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.RedisKeyUtil;
 import com.nowcoder.community.util.SensitiveFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,8 @@ import java.util.*;
 
 @Service
 public class DiscussPostService implements CommunityConstant {
+
+    private static final Logger logger = LoggerFactory.getLogger(DiscussPostService.class);
 
     @Autowired
     private DiscussPostMapper discussPostMapper;
@@ -114,8 +118,34 @@ public class DiscussPostService implements CommunityConstant {
         return discussPostMapper.updateScore(id, score);
     }
 
-    public void updatePostReadCount(int postId){
+    public void updatePostReadCount(int postId) {
         String redisKey = RedisKeyUtil.getPostReadKey(postId);
+        // 如果键不存在，则从数据库获取初值
+        Object readCountObj = redisTemplate.opsForValue().get(redisKey);
+        if (readCountObj == null) {
+            DiscussPost post = discussPostMapper.selectDiscussPostById(postId);
+            if (post != null) {
+                redisTemplate.opsForValue().set(redisKey, post.getReadCount());
+            } else {
+                redisTemplate.opsForValue().set(redisKey, 0);
+            }
+        }
+        // 增加访问量
         redisTemplate.opsForValue().increment(redisKey);
+    }
+
+    // 更新数据库中的阅读量
+    public void updatePostReadCountInDatabase() {
+        List<DiscussPost> posts = discussPostMapper.selectAllDiscussPosts();
+        for (DiscussPost post : posts) {
+            String redisKey = RedisKeyUtil.getPostReadKey(post.getId());
+            Object readCountObj = redisTemplate.opsForValue().get(redisKey);
+            if (readCountObj != null && readCountObj instanceof Integer) {
+                Integer readCount = (Integer) readCountObj;
+                discussPostMapper.updateReadCount(post.getId(), readCount);
+                redisTemplate.delete(redisKey);
+            }
+        }
+        logger.info("阅读量写入MySQL任务结束！");
     }
 }

@@ -1,6 +1,7 @@
 package com.nowcoder.community.controller;
 
 import com.nowcoder.community.annotation.LoginRequired;
+import com.nowcoder.community.dao.DiscussPostMapper;
 import com.nowcoder.community.entity.*;
 import com.nowcoder.community.event.EventProducer;
 import com.nowcoder.community.service.*;
@@ -75,6 +76,9 @@ public class UserController implements CommunityConstant {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private DiscussPostMapper discussPostMapper;
 
     // @用户用，获取用户的id
     @RequestMapping(path = "/id", method = RequestMethod.GET)
@@ -230,7 +234,20 @@ public class UserController implements CommunityConstant {
                 map.put("post", post);
                 map.put("likeCount", likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId()));
                 String redisKey = RedisKeyUtil.getPostReadKey(post.getId());
-                map.put("postReadCount", redisTemplate.opsForValue().get(redisKey));
+                Object readCountObj = redisTemplate.opsForValue().get(redisKey);
+                Integer readCount = null;
+                if (readCountObj != null) {
+                    readCount = (Integer) readCountObj;
+                } else {
+                    DiscussPost dbPost = discussPostMapper.selectDiscussPostById(post.getId());
+                    if (dbPost != null) {
+                        readCount = dbPost.getReadCount();
+                        redisTemplate.opsForValue().set(redisKey, readCount);
+                    } else {
+                        readCount = 0;
+                    }
+                }
+                map.put("postReadCount", readCount);
                 discussVOList.add(map);
             }
         }
@@ -292,7 +309,20 @@ public class UserController implements CommunityConstant {
                 map.put("post", post);
                 map.put("likeCount", likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId()));
                 String redisKey = RedisKeyUtil.getPostReadKey(post.getId());
-                map.put("postReadCount", redisTemplate.opsForValue().get(redisKey));
+                Object readCountObj = redisTemplate.opsForValue().get(redisKey);
+                Integer readCount = null;
+                if (readCountObj != null) {
+                    readCount = (Integer) readCountObj;
+                } else {
+                    DiscussPost dbPost = discussPostMapper.selectDiscussPostById(post.getId());
+                    if (dbPost != null) {
+                        readCount = dbPost.getReadCount();
+                        redisTemplate.opsForValue().set(redisKey, readCount);
+                    } else {
+                        readCount = 0;
+                    }
+                }
+                map.put("postReadCount", readCount);
                 discussVOList.add(map);
             }
         }

@@ -206,7 +206,11 @@ public class DiscussPostController implements CommunityConstant {
         // 增加帖子访问量
         discussPostService.updatePostReadCount(discussPostId);
         String redisKey = RedisKeyUtil.getPostReadKey(discussPostId);
-        model.addAttribute("postReadCount", redisTemplate.opsForValue().get(redisKey));
+        if(redisKey != null){
+            model.addAttribute("postReadCount", redisTemplate.opsForValue().get(redisKey));
+        }else {
+            model.addAttribute("postReadCount", discussPost.getReadCount());
+        }
 
         return "/site/discuss-detail";
     }

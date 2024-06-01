@@ -69,11 +69,11 @@
 						</span>
 						</h5>
 						<div class="text-muted mt-3">
-							<a th:if="${loginUser.id == user.id}" th:href="@{/user/setting}" style="color: rgb(109,117,125)">
+							<a th:if="${loginUser!=null && loginUser.id == user.id}" th:href="@{/user/setting}" style="color: rgb(109,117,125)">
 								<span th:if="${user.saying != null}" th:utext="${user.saying}"></span>
 								<span th:if="${user.saying == null}" th:text="'这个人很懒，什么都没有写~'"></span>
 							</a>
-							<span th:if="${loginUser.id != user.id}">
+							<span th:if="${loginUser==null || loginUser.id != user.id}">
 							<span th:if="${user.saying != null}" th:utext="${user.saying}"></span>
 							<span th:if="${user.saying == null}" th:text="'这个人很懒，什么都没有写~'"></span>
 							</span>

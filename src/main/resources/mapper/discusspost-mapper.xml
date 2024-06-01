@@ -5,11 +5,11 @@
 <mapper namespace="com.nowcoder.community.dao.DiscussPostMapper">
 
     <sql id="selectFields">
-        id, user_id, title, content, type, status, create_time, comment_count, score
+        id, user_id, title, content, type, status, create_time, comment_count, score, read_count
     </sql>
 
     <sql id="insertFields">
-        user_id, title, content, type, status, create_time, comment_count, score
+        user_id, title, content, type, status, create_time, comment_count, score <!--默认阅读量为0-->
     </sql>
 
     <select id="selectDiscussPosts" resultType="DiscussPost">
@@ -26,6 +26,12 @@
             order by type desc, score desc, create_time desc
         </if>
         limit #{offset}, #{limit}
+    </select>
+
+    <select id="selectAllDiscussPosts" resultType="DiscussPost">
+        select <include refid="selectFields"></include>
+        from discuss_post
+        where status != 2
     </select>
 
     <select id="selectFolloweePosts" resultType="DiscussPost">
@@ -90,6 +96,11 @@
 
     <update id="updatePost">
         update discuss_post set content = #{content}, create_time = #{time}, title = #{title}
+        where id = #{id}
+    </update>
+
+    <update id="updateReadCount">
+        update discuss_post set read_count = #{readCount}
         where id = #{id}
     </update>
 

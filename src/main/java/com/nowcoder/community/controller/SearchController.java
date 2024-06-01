@@ -1,12 +1,10 @@
 package com.nowcoder.community.controller;
 
+import com.nowcoder.community.dao.DiscussPostMapper;
 import com.nowcoder.community.entity.DiscussPost;
 import com.nowcoder.community.entity.Page;
 import com.nowcoder.community.entity.User;
-import com.nowcoder.community.service.ElasticsearchService;
-import com.nowcoder.community.service.FollowService;
-import com.nowcoder.community.service.LikeService;
-import com.nowcoder.community.service.UserService;
+import com.nowcoder.community.service.*;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.HostHolder;
 import com.nowcoder.community.util.RedisKeyUtil;
@@ -44,6 +42,9 @@ public class SearchController implements CommunityConstant {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private DiscussPostMapper discussPostMapper;
+
     // 路径格式：/search?keyword=xxx
     @RequestMapping(path = "/search", method = RequestMethod.GET)
     public String search(String keyword, Page page, Model model) {
@@ -63,8 +64,20 @@ public class SearchController implements CommunityConstant {
                 map.put("contentPlainText", contentPlainText);  // Processed plain text content
 
                 String redisKey = RedisKeyUtil.getPostReadKey(post.getId());
-                map.put("postReadCount", redisTemplate.opsForValue().get(redisKey));
-
+                Object readCountObj = redisTemplate.opsForValue().get(redisKey);
+                Integer readCount = null;
+                if (readCountObj != null) {
+                    readCount = (Integer) readCountObj;
+                } else {
+                    DiscussPost dbPost = discussPostMapper.selectDiscussPostById(post.getId());
+                    if (dbPost != null) {
+                        readCount = dbPost.getReadCount();
+                        redisTemplate.opsForValue().set(redisKey, readCount);
+                    } else {
+                        readCount = 0;
+                    }
+                }
+                map.put("postReadCount", readCount);
                 discussPosts.add(map);
             }
         }

@@ -268,6 +268,23 @@ public SimpleTriggerFactoryBean postScoreRefreshTrigger(JobDetail postScoreRefre
 }
 ```
 
+数据库新增触发器：双重保险使得score非负数
+
+```sql
+DELIMITER //
+
+CREATE TRIGGER BeforeUpdateScore
+BEFORE UPDATE ON discuss_post
+FOR EACH ROW
+BEGIN
+    IF NEW.score < 0 THEN
+        SET NEW.score = 0;
+    END IF;
+END; //
+
+DELIMITER ;
+```
+
 4. 展现热帖——重构老方法
 
 a. dao

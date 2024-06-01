@@ -18,6 +18,9 @@ public interface DiscussPostMapper {
     // 关注者的帖子
     List<DiscussPost> selectFolloweePosts(int offset, int limit, List<Integer> ids);
 
+    // 全体帖子
+    List<DiscussPost> selectAllDiscussPosts();
+
     // 某人所有的帖子，不分页
     List<DiscussPost> selectUserPosts(int userId);
 
@@ -38,6 +41,7 @@ public interface DiscussPostMapper {
     int updateType(int id, int type);
     int updateStatus(int id, int status);
     int updateScore(int id, double score);
+    int updateReadCount(int id, int readCount);
 
     // 更新帖子
     void updatePost(int id, String title, String content, Date time);
