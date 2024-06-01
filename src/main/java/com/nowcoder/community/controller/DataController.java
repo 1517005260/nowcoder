@@ -1,14 +1,16 @@
 package com.nowcoder.community.controller;
 
 import com.nowcoder.community.service.DataService;
+import com.nowcoder.community.util.CommunityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Date;
+import java.util.*;
 
 @Controller
 public class DataController {
@@ -46,5 +48,23 @@ public class DataController {
         model.addAttribute("dauEndDate", end);
 
         return "forward:/data";
+    }
+
+    @RequestMapping(path = "/data/uv/chart", method = RequestMethod.POST)
+    @ResponseBody
+    public String getUVChartData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+                                 @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
+        List<Long> uvData = dataService.getUVChartData(start, end);
+        return CommunityUtil.getJSONString(0, "success", Map.of("uvData", uvData));
+    }
+
+    // 获取 DAU 数据
+    @RequestMapping(path = "/data/dau/chart", method = RequestMethod.POST)
+    @ResponseBody
+    public String getDAUChartData(@DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
+                                  @DateTimeFormat(pattern = "yyyy-MM-dd") Date end) {
+        List<Long> dauData = dataService.getDAUChartData(start, end);
+        System.out.println(dauData);
+        return CommunityUtil.getJSONString(0, "success", Map.of("dauData", dauData));
     }
 }

@@ -85,4 +85,44 @@ public class DataService {
             }
         });
     }
+
+    public List<Long> getUVChartData(Date start, Date end) {
+        List<Long> uvData = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(start);
+
+        while (!calendar.getTime().after(end)) {
+            String key = RedisKeyUtil.getUVKey(df.format(calendar.getTime()));
+            uvData.add(redisTemplate.opsForHyperLogLog().size(key));
+            calendar.add(Calendar.DATE, 1);
+        }
+        return uvData;
+    }
+
+    public List<Long> getDAUChartData(Date start, Date end) {
+        if (start == null || end == null) {
+            throw new IllegalArgumentException("参数不能为空！");
+        }
+
+        List<Long> dauData = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(start);
+
+        while (!calendar.getTime().after(end)) {
+            String key = RedisKeyUtil.getDAUKey(df.format(calendar.getTime()));
+            Long dailyActiveCount = (Long) redisTemplate.execute(new RedisCallback<Long>() {
+                @Override
+                public Long doInRedis(RedisConnection connection) throws DataAccessException {
+                    return connection.bitCount(key.getBytes());
+                }
+            });
+            if (dailyActiveCount == null) {
+                dailyActiveCount = 0L;
+            }
+            dauData.add(dailyActiveCount);
+            calendar.add(Calendar.DATE, 1);
+        }
+        return dauData;
+    }
+
 }
