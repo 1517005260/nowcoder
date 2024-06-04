@@ -46,6 +46,8 @@ public class HomeController implements CommunityConstant {
     public String getIndexPage(Model model, Page page,
                                @RequestParam(name = "orderMode", defaultValue = "1")int orderMode){ // 默认热帖排序
 
+        // orderMode 0新 1热 2关注 3删除
+
         //方法调用前，SpringMVC会自动实例化Model和Page，并将Page注入Model
         //所以不用model.addAttribute(Page),直接在thymeleaf可以访问Page的数据
         User user = hostHolder.getUser();
@@ -64,7 +66,13 @@ public class HomeController implements CommunityConstant {
             list = discussPostService.findFolloweePosts(user.getId(), page.getOffset(), page.getLimit());
             // 清除未读帖子标记
             discussPostService.clearUnreadPosts(user.getId());
-        } else {
+        }else if(orderMode == 3){
+            if(user == null || user.getType() != 1){
+                return "/error/404";
+            }
+            list = discussPostService.findDeletedPosts();
+        }
+        else {
             page.setRows(discussPostService.findDiscussPostRows(0));
             // 默认是第一页，前10个帖子
             list = discussPostService.findDiscussPosts(0, page.getOffset(), page.getLimit(), orderMode);

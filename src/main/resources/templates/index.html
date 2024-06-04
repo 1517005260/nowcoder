@@ -91,6 +91,9 @@
 					<li class="nav-item">
 						<a th:class="|nav-link ${orderMode==0?'active' :''}|" th:href="@{/index(orderMode=0)}">最新</a>
 					</li>
+					<li class="nav-item">
+						<a th:class="|nav-link ${orderMode==3?'active' :''}|" th:href="@{/index(orderMode=3)}" sec:authorize="hasAnyAuthority('admin')">回收站</a>
+					</li>
 				</ul>
 				<a th:href="@{/discuss/publish}" th:if="${loginUser != null}">
 					<button type="button" class="btn btn-primary btn-sm position-absolute rt-0">
@@ -127,6 +130,7 @@
 							<span class="badge badge-secondary bg-danger" th:if="${map.post.status==1}">精华</span>
 						</h6>
 						<div class="text-muted font-size-12">
+							<a th:href="@{|/discuss/detail/${map.post.id}|}">
 							<u class="mr-3" th:utext="${map.user.username}">寒江雪</u> 发布于 <b th:text="${#dates.format(map.post.createTime,'yyyy-MM-dd HH:mm:ss')}">2019-04-15 15:32:18</b>
 							<ul class="d-inline float-right">
 								<li class="d-inline ml-2"><span th:text="${map.postReadCount}"></span> 浏览</li>
@@ -135,6 +139,7 @@
 								<li class="d-inline ml-2">|</li>
 								<li class="d-inline ml-2" >评论 <span th:text="${map.post.commentCount}">7</span></li>
 							</ul>
+							</a>
 						</div>
 					</div>
 				</li>

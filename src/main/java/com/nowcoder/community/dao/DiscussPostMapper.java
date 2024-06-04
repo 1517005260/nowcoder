@@ -21,6 +21,9 @@ public interface DiscussPostMapper {
     // 全体帖子
     List<DiscussPost> selectAllDiscussPosts();
 
+    // 已删除帖子（status == 2）
+    List<DiscussPost> selectDeletedDiscussPosts();
+
     // 某人所有的帖子，不分页
     List<DiscussPost> selectUserPosts(int userId);
 

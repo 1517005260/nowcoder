@@ -85,8 +85,9 @@ public class DiscussPostController implements CommunityConstant {
     @RequestMapping(path = "/updatePost/{postId}", method = RequestMethod.GET)
     public String getUpdatePage(@PathVariable("postId") int postId, Model model){
         DiscussPost post = discussPostService.findDiscussPostById(postId);
-        if (post == null || post.getUserId() != hostHolder.getUser().getId()) {
-            return "/error/404";  // 只能作者访问
+        User user = hostHolder.getUser();
+        if (post == null || post.getUserId() != user.getId() || post.getStatus() == 2) {
+            return "/error/404";  // 只能作者访问， 被删除的帖子无法访问
         }
         model.addAttribute("title", post.getTitle());
         model.addAttribute("content", post.getContent());
@@ -132,12 +133,16 @@ public class DiscussPostController implements CommunityConstant {
     public String getDiscussPost(@PathVariable("discussPostId") int discussPostId, Model model, Page page){
         //帖子
         DiscussPost discussPost = discussPostService.findDiscussPostById(discussPostId);
+        User user = hostHolder.getUser();
+        if(discussPost.getStatus() == 2 && (user == null || user.getType() != 1)){
+            return "/error/404";  // 非管理员无法查看已删除帖子
+        }
         String content = HtmlUtils.htmlUnescape(discussPost.getContent()); // 内容反转义，不然 markdown 格式无法显示
         discussPost.setContent(content);
         model.addAttribute("post", discussPost);
 
         //作者
-        User user = userService.findUserById(discussPost.getUserId());
+        user = userService.findUserById(discussPost.getUserId());
         model.addAttribute("user", user);
 
         // 赞
@@ -263,7 +268,9 @@ public class DiscussPostController implements CommunityConstant {
     @RequestMapping(path = "/delete", method = RequestMethod.POST)
     @ResponseBody
     public String setDelete(int id){
-        discussPostService.updateStatus(id, 2);
+        DiscussPost post = discussPostService.findDiscussPostById(id);
+        int status = post.getStatus() == 2 ? 0 : 2;
+        discussPostService.updateStatus(id, status);
 
         // 这时同步es应该是删除帖子
         Event event = new Event()

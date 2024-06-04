@@ -28,7 +28,9 @@
 			<!-- 帖子列表 -->
 			<ul class="list-unstyled mt-4">
 				<li class="media pb-3 pt-3 mb-3 border-bottom" th:each="map:${discussPosts}">
+					<a th:href="@{|/user/profile/${map.user.id}|}">
 					<img th:src="${map.user.headerUrl}" class="mr-4 rounded-circle" alt="用户头像" style="width: 50px;height: 50px">
+					</a>
 					<div class="media-body">
 						<h6 class="mt-0 mb-3">
 							<a th:href="@{|/discuss/detail/${map.post.id}|}" th:utext="${map.post.title}">备战<em>春招</em>，面试刷题跟他复习，一个月全搞定！</a>

@@ -34,6 +34,13 @@
         where status != 2
     </select>
 
+    <select id="selectDeletedDiscussPosts" resultType="DiscussPost">
+        select <include refid="selectFields"></include>
+        from discuss_post
+        where status = 2
+        order by create_time desc
+    </select>
+
     <select id="selectFolloweePosts" resultType="DiscussPost">
         select <include refid="selectFields"></include>
         from discuss_post

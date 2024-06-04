@@ -174,4 +174,9 @@ public class DiscussPostService implements CommunityConstant {
         String unreadKey = RedisKeyUtil.getFolloweePostUnreadKey(userId);
         redisTemplate.delete(unreadKey);
     }
+
+    // 找到所有已经删除的帖子
+    public List<DiscussPost> findDeletedPosts(){
+        return discussPostMapper.selectDeletedDiscussPosts();
+    }
 }
