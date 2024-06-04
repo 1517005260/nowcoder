@@ -6,9 +6,7 @@ import com.nowcoder.community.entity.Comment;
 import com.nowcoder.community.entity.Event;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.event.EventProducer;
-import com.nowcoder.community.util.CommunityConstant;
-import com.nowcoder.community.util.HostHolder;
-import com.nowcoder.community.util.SensitiveFilter;
+import com.nowcoder.community.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -16,7 +14,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.HtmlUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,8 +41,30 @@ public class CommentService implements CommunityConstant {
     @Autowired
     private EventProducer eventProducer;
 
-    public List<Comment> findCommentsByEntity(int entityType, int entityId, int offset, int limit){
-        return commentMapper.selectCommentsByEntity(entityType, entityId, offset, limit);
+    @Autowired
+    private LikeService likeService;
+
+    public List<Comment> findCommentsByEntity(int entityType, int entityId, int offset, int limit, int orderMode){
+        if(orderMode != 2){
+            return commentMapper.selectCommentsByEntity(entityType, entityId, offset, limit, orderMode);
+        }else{
+            // 获取所有评论
+            List<Comment> comments = commentMapper.selectCommentsByEntity(entityType, entityId, 0, Integer.MAX_VALUE, 1);
+
+            // 对每条评论获取其赞数，并存储在一个Map中
+            Map<Comment, Integer> likeCountMap = new HashMap<>();
+            for(Comment comment : comments){
+                int likeCount = (int) likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT, comment.getId());
+                likeCountMap.put(comment, likeCount);
+            }
+
+            // 按赞数对评论进行降序排序
+            comments.sort((c1, c2) -> likeCountMap.get(c2) - likeCountMap.get(c1));
+
+            // 返回指定范围内的评论
+            int toIndex = Math.min(offset + limit, comments.size());
+            return comments.subList(offset, toIndex);
+        }
     }
 
     public int findCommentCount(int entityType, int entityId){

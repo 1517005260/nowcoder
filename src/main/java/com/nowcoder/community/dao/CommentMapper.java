@@ -9,7 +9,8 @@ import java.util.List;
 public interface CommentMapper {
 
     //分页查询评论
-    List<Comment> selectCommentsByEntity(int entityType, int entityId, int offset, int limit);
+    // orderMode 0时间升序 1时间降序 2赞数降序
+    List<Comment> selectCommentsByEntity(int entityType, int entityId, int offset, int limit, int orderMode);
 
     //查询评论条目数
     int selectCountByEntity(int entityType, int entityId);

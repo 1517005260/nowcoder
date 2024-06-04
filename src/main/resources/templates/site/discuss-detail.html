@@ -113,6 +113,18 @@
 					<a href="#replyform" class="btn btn-primary btn-sm">&nbsp;&nbsp;评&nbsp;&nbsp;论&nbsp;&nbsp;</a>
 				</div>
 			</div>
+			<!-- 添加排序选项 -->
+			<ul class="nav nav-tabs mb-3">
+				<li class="nav-item">
+					<a th:class="|nav-link ${orderMode==1?'active':''}|" th:href="@{/discuss/detail/{discussPostId}(discussPostId=${post.id}, orderMode=1)}">最新</a>
+				</li>
+				<li class="nav-item">
+					<a th:class="|nav-link ${orderMode==0?'active':''}|" th:href="@{/discuss/detail/{discussPostId}(discussPostId=${post.id}, orderMode=0)}">默认</a>
+				</li>
+				<li class="nav-item">
+					<a th:class="|nav-link ${orderMode==2?'active':''}|" th:href="@{/discuss/detail/{discussPostId}(discussPostId=${post.id}, orderMode=2)}">最热</a>
+				</li>
+			</ul>
 			<!-- 回帖列表 -->
 			<ul class="list-unstyled mt-4">
 				<li class="media pb-3 pt-3 mb-3 border-bottom" th:each="cvo:${comments}">
@@ -123,7 +135,7 @@
 						<div class="mt-0">
 							<span class="font-size-12 text-success" th:utext="${cvo.user.username}">掉脑袋切切</span>
 							<span th:if="${cvo.user.id == post.userId}" class="author-label">up</span>
-							<span class="badge badge-secondary float-right floor">
+							<span class="badge badge-secondary float-right floor" th:if="${orderMode==0}">
                                 <i th:text="${page.offset + cvoStat.count}">1</i>  <!--当前楼层数 = 当前页起始楼 + 当前页循环数-->
                                 楼
                             </span>

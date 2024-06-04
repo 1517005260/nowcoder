@@ -18,7 +18,12 @@
         where status = 0
         and entity_type = #{entityType}
         and entity_id = #{entityId}
+        <if test="orderMode==0">
         order by create_time asc
+        </if>
+        <if test="orderMode==1">
+            order by create_time desc
+        </if>
         limit #{offset}, #{limit}
     </select>
 

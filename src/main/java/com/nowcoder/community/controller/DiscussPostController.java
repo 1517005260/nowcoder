@@ -130,7 +130,8 @@ public class DiscussPostController implements CommunityConstant {
 
     //帖子详情
     @RequestMapping(path = "/detail/{discussPostId}", method = RequestMethod.GET)
-    public String getDiscussPost(@PathVariable("discussPostId") int discussPostId, Model model, Page page){
+    public String getDiscussPost(@PathVariable("discussPostId") int discussPostId, Model model, Page page
+    ,@RequestParam(name = "orderMode", defaultValue = "0")int orderMode){
         //帖子
         DiscussPost discussPost = discussPostService.findDiscussPostById(discussPostId);
         User user = hostHolder.getUser();
@@ -156,7 +157,7 @@ public class DiscussPostController implements CommunityConstant {
         page.setPath("/discuss/detail/" + discussPostId);
         page.setRows(discussPost.getCommentCount());
         List<Comment> commentList = commentService.
-                findCommentsByEntity(ENTITY_TYPE_POST, discussPost.getId(), page.getOffset(), page.getLimit());
+                findCommentsByEntity(ENTITY_TYPE_POST, discussPost.getId(), page.getOffset(), page.getLimit(), orderMode);
 
         //找到评论的用户
         List<Map<String, Object>> commentVoList = new ArrayList<>();  // Vo = view objects 显示对象
@@ -176,7 +177,7 @@ public class DiscussPostController implements CommunityConstant {
                 //评论的评论——回复
                  List<Comment> replyList = commentService.
                         findCommentsByEntity(ENTITY_TYPE_COMMENT,
-                                comment.getId(), 0, Integer.MAX_VALUE);  // 回复就不需要分页了，就一页显示所有评论
+                                comment.getId(), 0, Integer.MAX_VALUE,0);  // 回复就不需要分页了，就一页显示所有评论，且按回复顺序显示
 
                 //找到回复的用户
                 List<Map<String, Object>> replyVoList = new ArrayList<>();
@@ -219,6 +220,8 @@ public class DiscussPostController implements CommunityConstant {
         }else {
             model.addAttribute("postReadCount", discussPost.getReadCount());
         }
+
+        model.addAttribute("orderMode", orderMode);
 
         return "/site/discuss-detail";
     }
