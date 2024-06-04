@@ -17,7 +17,6 @@ public class PostReadCountSyncTask {
 
     @Scheduled(fixedRate = 1000 * 60 * 5)  // 测试用，5分钟执行一次
     public void syncReadCountToDatabase() {
-        logger.info("开始执行阅读量写入MySQL任务！");
         discussPostService.updatePostReadCountInDatabase();
     }
 }

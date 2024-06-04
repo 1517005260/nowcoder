@@ -1,19 +1,25 @@
 package com.nowcoder.community.service;
 
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.nowcoder.community.dao.DiscussPostMapper;
 import com.nowcoder.community.entity.DiscussPost;
-import com.nowcoder.community.entity.User;
 import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.RedisKeyUtil;
 import com.nowcoder.community.util.SensitiveFilter;
+import jakarta.annotation.PostConstruct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class DiscussPostService implements CommunityConstant {
@@ -29,7 +35,63 @@ public class DiscussPostService implements CommunityConstant {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Value("${caffeine.posts.max-size}")
+    private int maxSize;
+
+    @Value("${caffeine.posts.expire-seconds}")
+    private int expireSeconds;
+
+    // 帖子列表（热帖）缓存
+    private LoadingCache<String, List<DiscussPost>> postListCache;
+
+    // 缓存帖子总数
+    private LoadingCache<Integer, Integer> postRowsCache;
+
+    // 初始化缓存
+    @PostConstruct
+    public void init(){
+        postListCache = Caffeine.newBuilder()
+                .maximumSize(maxSize)
+                .expireAfterWrite(expireSeconds, TimeUnit.SECONDS)
+                .build(new CacheLoader<String, List<DiscussPost>>() {
+                    @Override
+                    public @Nullable List<DiscussPost> load(String key) throws Exception { // load实质上查询了数据库
+                        if(key == null || key.length() ==0){
+                            throw new IllegalArgumentException("参数错误！");
+                        }
+                        String[] params = key.split(":");
+                        if(params == null && params.length != 2){
+                            throw new IllegalArgumentException("参数错误！");
+                        }
+                        int offset = Integer.parseInt(params[0]);
+                        int limit = Integer.parseInt(params[1]);
+
+                        // 可以在这里访问redis建立多级缓存，如果没有数据再进入db查找
+
+                        logger.debug("load post list from DB!");
+                        return discussPostMapper.selectDiscussPosts(0, offset, limit, 1);
+                    }
+                });
+
+        postRowsCache = Caffeine.newBuilder()
+                .maximumSize(maxSize)
+                .expireAfterWrite(expireSeconds, TimeUnit.SECONDS)
+                .build(new CacheLoader<Integer, Integer>() {
+                    @Override
+                    public @Nullable Integer load(Integer key) throws Exception {
+                        logger.debug("load post rows from DB !");
+                        return discussPostMapper.selectDiscussPostRows(key);
+                    }
+                });
+    }
+
     public List<DiscussPost> findDiscussPosts(int userId, int offset, int limit, int orderMode){
+         //offset 和 limit 作为key标识一页
+        if(userId == 0 && orderMode ==1){
+            // 仅缓存热帖
+            return postListCache.get(offset + ":" + limit); // 直接从缓存返回结果
+        }
+        logger.debug("load post list from DB!");
         return discussPostMapper.selectDiscussPosts(userId, offset,limit, orderMode);
     }
 
@@ -61,11 +123,12 @@ public class DiscussPostService implements CommunityConstant {
         return cnt;
     }
 
-    public List<DiscussPost> findUserPosts(int userId){
-        return discussPostMapper.selectUserPosts(userId);
-    }
-
     public int findDiscussPostRows(int userId){
+        if(userId == 0){
+            // 首页查询时缓存数量
+            return postRowsCache.get(userId);
+        }
+        logger.debug("load post rows from DB !");
         return discussPostMapper.selectDiscussPostRows(userId);
     }
 
@@ -136,6 +199,7 @@ public class DiscussPostService implements CommunityConstant {
 
     // 更新数据库中的阅读量
     public void updatePostReadCountInDatabase() {
+        logger.info("阅读量写入MySQL任务开始！");
         List<DiscussPost> posts = discussPostMapper.selectAllDiscussPosts();
         for (DiscussPost post : posts) {
             String redisKey = RedisKeyUtil.getPostReadKey(post.getId());
