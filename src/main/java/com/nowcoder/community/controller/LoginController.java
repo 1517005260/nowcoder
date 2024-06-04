@@ -176,4 +176,21 @@ public class LoginController implements CommunityConstant {
         securityContextLogoutHandler.logout(request, response, authentication);
         return "redirect:/login";
     }
+
+    @RequestMapping(path = "/forget" ,method = RequestMethod.GET)
+    public String getForgetPage(){
+        return "/site/forget";
+    }
+
+    @RequestMapping(path = "/forgetPassword", method = RequestMethod.POST)
+    public String updatePassword(String email, String password ,Model model){
+        Map<String, Object> map = userService.resetPassword(email, password);
+        if (map == null || map.isEmpty()) {
+            return "/site/login";
+        } else {
+            model.addAttribute("emailMsg", map.get("emailMsg"));
+            model.addAttribute("passwordMsg", map.get("passwordMsg"));
+            return "/site/forget";
+        }
+    }
 }

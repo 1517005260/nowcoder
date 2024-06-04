@@ -190,6 +190,37 @@ public class UserService implements CommunityConstant {
         return rows;
     }
 
+    // 重置密码 - forget
+    public Map<String, Object> resetPassword(String email, String password) {
+        Map<String, Object> map = new HashMap<>();
+        if (StringUtils.isBlank(email)) {
+            map.put("emailMsg", "邮箱不能为空!");
+            return map;
+        }
+        if (StringUtils.isBlank(password)) {
+            map.put("passwordMsg", "密码不能为空!");
+            return map;
+        }
+        if(password.length()<8){
+            map.put("passwordMsg", "密码不能少于8位！");
+            return map;
+        }
+        User user = userMapper.selectByEmail(email);
+        if (user == null) {
+            map.put("emailMsg", "该邮箱不存在!");
+            return map;
+        }
+        password = CommunityUtil.md5(password + user.getSalt());
+        if (user.getPassword().equals(password)) {
+            map.put("passwordMsg", "新密码不能和原密码相同!");
+            return map;
+        }
+        userMapper.updatePassword(user.getId(), password);
+        clearCache(user.getId());
+        return map;
+    }
+
+    // 更新密码 - not forget
     public Map<String, Object> updatePassword(int userId, String oldPassword, String newPassword1, String newPassword2){
         Map<String, Object> map = new HashMap<>();
         User user = userMapper.selectById(userId);
