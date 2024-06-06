@@ -220,6 +220,32 @@ public class UserService implements CommunityConstant {
         return map;
     }
 
+    // 重置密码邮箱验证码：
+    public Map<String, Object> getForgetCode(String email) {
+        Map<String, Object> map = new HashMap<>();
+        if (StringUtils.isBlank(email)) {
+            map.put("emailMsg", "邮箱不能为空!");
+            return map;
+        }
+        User user = userMapper.selectByEmail(email);
+        if (user == null) {
+            map.put("emailMsg", "该邮箱不存在!");
+            return map;
+        }
+        if (user.getStatus() == 0) {
+            map.put("emailMsg", "该邮箱未激活!");
+        }
+        // 发送邮件
+        Context context = new Context();
+        context.setVariable("email", email);
+        String code = CommunityUtil.genUUID().substring(0, 4);
+        context.setVariable("verifyCode", code);
+        String content = templateEngine.process("/mail/forget", context);
+        mailClient.sendMail(email, "找回密码", content);
+        map.put("verifyCode", code);
+        return map;
+    }
+
     // 更新密码 - not forget
     public Map<String, Object> updatePassword(int userId, String oldPassword, String newPassword1, String newPassword2){
         Map<String, Object> map = new HashMap<>();

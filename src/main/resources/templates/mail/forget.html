@@ -1,19 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="utf-8">
-	<link rel="icon" th:href="@{/img/icon.png}"/>
-    <title>牛客网-忘记密码</title>
+	<meta charset="utf-8">
+	<title>忘记密码</title>
 </head>
 <body>
-	<div>
-		<p>
-			<b>xxx@xxx.com</b>, 您好!
-		</p>
-		<p>
-			您正在找回牛客账号的密码, 本次操作的验证码为 <b>u5s6dt</b> , 
-			有效时间5分钟, 请您及时进行操作!
-		</p>
-	</div>
+<div>
+	<p>
+		<b th:text="${email}">xxx@xxx.com</b>, 您好!
+	</p>
+	<p>
+		您正在找回账号的密码，本次操作的验证码为 <b th:text="${verifyCode}">u5s6dt</b>，请您及时设置新密码!
+	</p>
+</div>
 </body>
 </html>

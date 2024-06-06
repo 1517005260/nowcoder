@@ -11,6 +11,7 @@ import com.nowcoder.community.util.RedisKeyUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -182,11 +180,35 @@ public class LoginController implements CommunityConstant {
         return "/site/forget";
     }
 
+    // 邮箱验证码
+    @RequestMapping(path = "/forget/code", method = RequestMethod.GET)
+    @ResponseBody
+    public String getForgetCode(String email, HttpSession session) {
+        Map<String, Object> map = userService.getForgetCode(email);
+        if (map.containsKey("verifyCode")) {
+            // 保存验证码，注意这里要对不同的邮箱保存不同的验证码，防止换邮箱后验证码还是之前的
+            session.setAttribute(email + "_verifyCode", map.get("verifyCode"));
+            return CommunityUtil.getJSONString(0);
+        } else {
+            return CommunityUtil.getJSONString(1, (String) map.get("emailMsg"));
+        }
+    }
+
     @RequestMapping(path = "/forgetPassword", method = RequestMethod.POST)
-    public String updatePassword(String email, String password ,Model model){
+    public String resetPassword(String email, String verifyCode, String password, Model model, HttpSession session) {
+        // 检查验证码
+        String code = (String) session.getAttribute(email + "_verifyCode");
+        if (StringUtils.isBlank(verifyCode) || StringUtils.isBlank(code) || !code.equalsIgnoreCase(verifyCode)) {
+            // 验证码错误，返回重置密码页面
+            model.addAttribute("codeMsg", "验证码错误!");
+            return "/site/forget";
+        }
+
         Map<String, Object> map = userService.resetPassword(email, password);
         if (map == null || map.isEmpty()) {
-            return "/site/login";
+            model.addAttribute("msg", "重置密码成功，正在前往登录页面，请重新登录!");
+            model.addAttribute("target", "/login");
+            return "/site/operate-result";
         } else {
             model.addAttribute("emailMsg", map.get("emailMsg"));
             model.addAttribute("passwordMsg", map.get("passwordMsg"));

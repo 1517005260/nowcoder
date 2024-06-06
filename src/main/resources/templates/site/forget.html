@@ -33,6 +33,20 @@
 						</div>
 					</div>
 					<div class="form-group row mt-4">
+						<label for="verifycode" class="col-sm-2 col-form-label text-right">验证码:</label>
+						<div class="col-sm-6">
+							<input type="text" th:class="|form-control ${codeMsg!=null?'is-invalid':''}|"
+								   th:value="${param.verifyCode}" name="verifyCode" id="verifycode"
+								   placeholder="请输入验证码!">
+							<div class="invalid-feedback" th:text="${codeMsg}">
+								验证码不正确!
+							</div>
+						</div>
+						<div class="col-sm-4">
+							<a href="javascript:;" id="verifyCodeBtn" class="btn btn-info form-control">获取验证码</a>
+						</div>
+					</div>
+					<div class="form-group row mt-4">
 						<label for="your-password" class="col-sm-2 col-form-label text-right">新密码:</label>
 						<div class="col-sm-10">
 							<input type="password" th:class="|form-control ${passwordMsg!=null?'is-invalid':''}|"
@@ -62,5 +76,6 @@
 	<script type="module" th:src="@{/js/popper.min.js}"></script>
 	<script th:src="@{/js/bootstrap.min.js}"></script>
 	<script th:src="@{/js/global.js}"></script>
+	<script th:src="@{/js/forget.js}"></script>
 </body>
 </html>
