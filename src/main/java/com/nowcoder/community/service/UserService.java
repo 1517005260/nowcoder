@@ -107,7 +107,7 @@ public class UserService implements CommunityConstant {
         //激活路径：https://{domain}/community/activation/{userid}/{activate_code}
         String url = domain + contextPath + "/activation/" + user.getId() + "/" +user.getActivationCode();
         context.setVariable("url", url);
-        String content = templateEngine.process("/mail/activation",context);
+        String content = templateEngine.process("mail/activation",context);
         mailClient.sendMail(user.getEmail(), "邮箱激活账号", content);
 
         return map;
@@ -240,7 +240,7 @@ public class UserService implements CommunityConstant {
         context.setVariable("email", email);
         String code = CommunityUtil.genUUID().substring(0, 4);
         context.setVariable("verifyCode", code);
-        String content = templateEngine.process("/mail/forget", context);
+        String content = templateEngine.process("mail/forget", context);
         mailClient.sendMail(email, "找回密码", content);
         map.put("verifyCode", code);
         return map;

@@ -95,37 +95,43 @@ function setDelete(){
     );
 }
 
-var titleText="";
+var titleText = "";
 var authorText = "";
 document.addEventListener("DOMContentLoaded", function() {
-        // 获取包含ID为"title"的元素
-        var title = document.getElementById("title");
+    // 获取包含ID为"title"的元素
+    var title = document.getElementById("title");
+    // 获取元素的文本值
+    titleText = title.innerText; // 或者使用 textContent
 
-        // 获取元素的文本值
-        titleText = title.innerText; // 或者使用 textContent
-
-        var author = document.getElementById("author")
-        authorText = author.innerText;
+    var author = document.getElementById("author");
+    authorText = author.innerText;
 });
-function share(){
+
+function share() {
     let currentUrl = window.location.href;
     // 组织要复制的内容
     const formattedText = `${titleText} - ${authorText}的帖子 - 校园论坛\n${currentUrl}`;
 
-    // 使用Clipboard API复制格式化后的内容到剪切板
-    navigator.clipboard.writeText(formattedText).then(() => {
-        // 显示自定义提示框
-        const customAlert = document.getElementById('customAlert');
-        customAlert.style.display = 'block';
+    // 创建一个临时的textarea元素
+    const tempTextarea = document.createElement('textarea');
+    tempTextarea.value = formattedText;
+    document.body.appendChild(tempTextarea);
 
-        // 1秒后自动隐藏提示框
-        setTimeout(() => {
-            customAlert.style.display = 'none';
-        }, 1000);
-    }).catch(err => {
-        // 复制失败时提示用户
-        alert('复制失败: ' + err);
-    });
+    // 选择并复制内容
+    tempTextarea.select();
+    document.execCommand('copy');
+
+    // 删除临时元素
+    document.body.removeChild(tempTextarea);
+
+    // 显示自定义提示框
+    const customAlert = document.getElementById('customAlert');
+    customAlert.style.display = 'block';
+
+    // 1秒后自动隐藏提示框
+    setTimeout(() => {
+        customAlert.style.display = 'none';
+    }, 1000);
 }
 
 function update(id){

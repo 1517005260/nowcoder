@@ -87,7 +87,7 @@ public class SearchController implements CommunityConstant {
         page.setPath("/search?keyword=" + keyword);
         page.setRows(searchResult == null ? 0 : (int) searchResult.getTotalElements());
 
-        return "/site/search";
+        return "site/search";
     }
 
     private String extractPlainText(String markdown) {
@@ -149,6 +149,6 @@ public class SearchController implements CommunityConstant {
         page.setPath("/searchUser?name=" + username);
         page.setRows(searchResult == null ? 0 : (int)searchResult.getTotalElements());
 
-        return "/site/searchUser";
+        return "site/searchUser";
     }
 }

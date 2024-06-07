@@ -298,7 +298,7 @@
 					return new Promise(function(resolve, reject) {
 						getUserIdByUsername(username, function(userId) {
 							if (userId !== null) {
-								var userLink = '<a href="/community/user/profile/' + userId + '" style="color:rgb(34,88,190);">' + match + '</a>';
+								var userLink = '<a href="/user/profile/' + userId + '" style="color:rgb(34,88,190);">' + match + '</a>';
 								resolve({ match: match, userLink: userLink });
 							} else {
 								resolve(null);
@@ -324,7 +324,7 @@
 		// 根据用户名获取用户ID
 		function getUserIdByUsername(username, callback) {
 			$.ajax({
-				url: '/community/user/id',
+				url: '/user/id',
 				type: 'GET',
 				data: { username: username },
 				success: function(data) {

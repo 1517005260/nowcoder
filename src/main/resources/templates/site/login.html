@@ -61,10 +61,9 @@
 					<div class="form-group row mt-4">
 						<div class="col-sm-2"></div>
 						<div class="col-sm-10">
-							<input type="checkbox"
-								   name="rememberme" id="remember-me"
-								   th:checked="${param.rememberme}">
-							<label class="form-check-label" for="remember-me">记住我</label>
+							<input type="checkbox" id="rememberMe" name="rememberMe"
+								   th:checked="${param.rememberMe}">
+							<label class="form-check-label" for="rememberMe">记住我</label>
 							<a th:href="@{/forget}" class="text-danger float-right">忘记密码?</a>
 						</div>
 					</div>				

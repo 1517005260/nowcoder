@@ -19,7 +19,7 @@ public class DataController {
     // 访问统计页面
     @RequestMapping(path = "/data", method = {RequestMethod.GET, RequestMethod.POST}) // post接收forward转来的请求
     public String getDataPage(){
-        return "/site/admin/data";
+        return "site/admin/data";
     }
 
     // 统计 UV 并获取图表数据

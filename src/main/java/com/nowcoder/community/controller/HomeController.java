@@ -42,6 +42,11 @@ public class HomeController implements CommunityConstant {
     @Autowired
     private DiscussPostMapper discussPostMapper;
 
+    @RequestMapping(path = "/", method = RequestMethod.GET)
+    public String root(){
+        return "forward:/index";
+    }
+
     @RequestMapping(path = "/index", method = RequestMethod.GET)
     public String getIndexPage(Model model, Page page,
                                @RequestParam(name = "orderMode", defaultValue = "1")int orderMode){ // 默认热帖排序
@@ -59,7 +64,7 @@ public class HomeController implements CommunityConstant {
         List<DiscussPost> list = new ArrayList<>();
         if (orderMode == 2) {
             if (user == null) {
-                return "/site/login";
+                return "site/login";
             }
             int cnt = discussPostService.findFolloweePostCount(user.getId());
             page.setRows(cnt);
@@ -68,7 +73,7 @@ public class HomeController implements CommunityConstant {
             discussPostService.clearUnreadPosts(user.getId());
         }else if(orderMode == 3){
             if(user == null || user.getType() != 1){
-                return "/error/404";
+                return "error/404";
             }
             list = discussPostService.findDeletedPosts();
         }
@@ -113,18 +118,18 @@ public class HomeController implements CommunityConstant {
         // 处理完的数据填充给前端页面
         model.addAttribute("discussPosts", discussPosts);
         model.addAttribute("orderMode", orderMode);
-        return "/index";
+        return "index";
     }
 
     // 重定向到错误页面
     @RequestMapping(path = "/error", method = RequestMethod.GET)
     public String getErrorPage(){
-        return "/error/500";
+        return "error/500";
     }
 
     // 权限不足页面
     @RequestMapping(path = "/denied", method = RequestMethod.GET)
     public String getDeniedPage() {
-        return "/error/404";
+        return "error/404";
     }
 }

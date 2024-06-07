@@ -11,6 +11,8 @@ import com.nowcoder.community.util.HostHolder;
 import com.nowcoder.community.util.RedisKeyUtil;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
+import io.micrometer.common.util.StringUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,18 +59,6 @@ public class UserController implements CommunityConstant {
 
     @Autowired
     private FollowService followService;
-
-    @Value("${qiniu.key.access}")
-    private String accessKey;
-
-    @Value("${qiniu.key.secret}")
-    private String secretKey;
-
-    @Value("${qiniu.bucket.header.name}")
-    private String headerBucketName;
-
-    @Value("${qiniu.bucket.header.url}")
-    private String headerBucketUrl;
 
     @Autowired
     private EventProducer eventProducer;
@@ -98,37 +93,84 @@ public class UserController implements CommunityConstant {
 
     @LoginRequired
     @RequestMapping(path = "/setting", method = RequestMethod.GET)
-    public String getSettingPage(Model model){
-        // 上传头像
-        String fileName = CommunityUtil.genUUID();
-        // 设置响应信息
-        StringMap policy = new StringMap();
-        policy.put("returnBody", CommunityUtil.getJSONString(0));
-        // 生成上传七牛云的凭证
-        Auth auth = Auth.create(accessKey, secretKey);
-        String token = auth.uploadToken(headerBucketName, fileName, 3600, policy);
-
-        model.addAttribute("uploadToken", token);
-        model.addAttribute("fileName", fileName);
-        return "/site/setting";
+    public String getSettingPage() {
+        return "site/setting";
     }
 
-    // 更新头像路径
-    @RequestMapping(path = "/header/url", method = RequestMethod.POST)
-    @ResponseBody
-    public String updateHeaderUrl(String fileName){
-        if(fileName == null){
-            return CommunityUtil.getJSONString(1, "文件名为空！");
+    @LoginRequired
+    @RequestMapping(path = "/upload", method = RequestMethod.POST)
+    public String uploadHeader(MultipartFile headerImage, Model model) {
+        if (headerImage == null) {
+            model.addAttribute("error", "上传的头像图片为空！");
+            return "site/setting";
         }
-        String url = headerBucketUrl + "/" + fileName;
-        userService.updateHeader(hostHolder.getUser().getId(), url);
 
-        Event event = new Event()
-                .setTopic(TOPIC_UPDATE)
-                .setUserId(hostHolder.getUser().getId());
-        eventProducer.fireEvent(event);
+        // 检查文件大小
+        if (headerImage.getSize() > 500 * 1024) { // 500KB = 500 * 1024 bytes
+            model.addAttribute("error", "上传的文件大小不能超过500KB！建议使用QQ截图缩小！");
+            return "site/setting";
+        }
 
-        return CommunityUtil.getJSONString(0);
+        // 给上传的文件重命名
+        String fileName = headerImage.getOriginalFilename();
+        if (fileName == null || StringUtils.isBlank(fileName)) {
+            model.addAttribute("error", "您还没有选择图片!");
+            return "site/setting";
+        }
+
+        int index = fileName.lastIndexOf(".");
+        if (index == -1) {
+            model.addAttribute("error", "文件格式不正确!（只支持*.png/*.jpg/*.jpeg）");
+            return "site/setting";
+        }
+
+        String suffix = fileName.substring(index);
+        if (StringUtils.isBlank(suffix) || (!".png".equals(suffix) && !".jpg".equals(suffix) && !".jpeg".equals(suffix))) {
+            model.addAttribute("error", "文件格式不正确!（只支持*.png/*.jpg/*.jpeg）");
+            return "site/setting";
+        }
+
+        // 随机文件名
+        fileName = CommunityUtil.genUUID() + suffix;
+
+        // 存储文件
+        File dist = new File(uploadPath + "/" + fileName); // 存放路径
+        try {
+            headerImage.transferTo(dist);
+        } catch (IOException e) {
+            logger.error("上传文件失败：" + e.getMessage());
+            throw new RuntimeException("上传文件失败，服务器发生异常！", e);
+        }
+
+        // 更新用户头像（非服务器，而是web路径）
+        // http://...../community/user/header/xxx.png
+        User user = hostHolder.getUser();
+        String headerUrl = domain + contextPath + "/user/header/" + fileName;
+        userService.updateHeader(user.getId(), headerUrl);
+
+        return "redirect:/index";
+    }
+
+    @RequestMapping(path = "/header/{fileName}", method = RequestMethod.GET)
+    public void getHeader(@PathVariable("fileName") String fileName, HttpServletResponse response){
+        // 服务器存放路径
+        fileName = uploadPath + "/" + fileName;
+        String suffix = fileName.substring(fileName.lastIndexOf(".") + 1);
+
+        //响应文件
+        response.setContentType("image/" + suffix);
+        try (
+                OutputStream os = response.getOutputStream();
+                FileInputStream fis = new FileInputStream(fileName);
+        ){
+            byte[] buffer = new byte[1024];
+            int b = 0;
+            while( (b = fis.read(buffer)) != -1){
+                os.write(buffer, 0, b);
+            }
+        } catch (IOException e) {
+            logger.error("读取头像失败：" + e.getMessage());
+        }
     }
 
     @LoginRequired
@@ -141,7 +183,7 @@ public class UserController implements CommunityConstant {
         } else {
             model.addAttribute("oldPasswordMsg", map.get("oldPasswordMsg"));
             model.addAttribute("newPasswordMsg", map.get("newPasswordMsg"));
-            return "/site/setting";
+            return "site/setting";
         }
     }
 
@@ -157,8 +199,8 @@ public class UserController implements CommunityConstant {
             eventProducer.fireEvent(event);
             return "redirect:/user/profile/" + user.getId();
         } else {
-            model.addAttribute("errorMsg", map.get("errorMsg"));
-            return "/site/setting";
+            model.addAttribute("SayingErrorMsg", map.get("SayingErrorMsg"));
+            return "site/setting";
         }
     }
 
@@ -175,7 +217,7 @@ public class UserController implements CommunityConstant {
             return "redirect:/user/profile/" + user.getId();
         } else {
             model.addAttribute("errorMsg", map.get("errorMsg"));
-            return "/site/setting";
+            return "site/setting";
         }
     }
 
@@ -207,7 +249,7 @@ public class UserController implements CommunityConstant {
         }
         model.addAttribute("hasFollowed", hasFollowed);
 
-        return "/site/profile";
+        return "site/profile";
     }
 
     // 我的帖子、我的回复
@@ -253,7 +295,7 @@ public class UserController implements CommunityConstant {
         }
         model.addAttribute("discussPosts", discussVOList);
 
-        return "/site/my-post";
+        return "site/my-post";
     }
 
     @RequestMapping(path = "/myreply/{userId}", method = RequestMethod.GET)
@@ -283,7 +325,7 @@ public class UserController implements CommunityConstant {
         }
         model.addAttribute("comments", commentVOList);
 
-        return "/site/my-reply";
+        return "site/my-reply";
     }
 
     @RequestMapping(path = "/mylikes/{userId}", method = RequestMethod.GET)
@@ -328,7 +370,7 @@ public class UserController implements CommunityConstant {
         }
         model.addAttribute("discussPosts", discussVOList);
 
-        return "/site/my-likes";
+        return "site/my-likes";
     }
 
     @RequestMapping(path = "/updatetype", method = RequestMethod.POST)

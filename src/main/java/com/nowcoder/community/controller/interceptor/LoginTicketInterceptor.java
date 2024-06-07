@@ -44,7 +44,7 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
             LoginTicket loginTicket = userService.findLoginTicket(ticket);
 
             if(loginTicket != null && loginTicket.getStatus() == 0 &&
-                    loginTicket.getExpired().after(new Date())){    //凭证为空，且有效，且过期时间晚于当前时间
+                    loginTicket.getExpired().after(new Date())){    //凭证非空，且有效，且过期时间晚于当前时间
                 User user = userService.findUserById(loginTicket.getUserId());
 
                 //在本次请求（线程）中持久化用户（持有用户信息）

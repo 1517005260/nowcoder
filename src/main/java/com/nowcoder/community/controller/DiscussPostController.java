@@ -45,7 +45,7 @@ public class DiscussPostController implements CommunityConstant {
 
     @RequestMapping(path = "/publish", method = RequestMethod.GET)
     public String getPublishPage(Model model){
-        return "/site/publish-posts";
+        return "site/publish-posts";
     }
 
     //处理增加帖子异步请求
@@ -93,7 +93,7 @@ public class DiscussPostController implements CommunityConstant {
         model.addAttribute("content", post.getContent());
         model.addAttribute("id", postId);
 
-        return "/site/update-posts";
+        return "site/update-posts";
     }
 
     // 更改帖子请求
@@ -136,7 +136,7 @@ public class DiscussPostController implements CommunityConstant {
         DiscussPost discussPost = discussPostService.findDiscussPostById(discussPostId);
         User user = hostHolder.getUser();
         if(discussPost.getStatus() == 2 && (user == null || user.getType() != 1)){
-            return "/error/404";  // 非管理员无法查看已删除帖子
+            return "error/404";  // 非管理员无法查看已删除帖子
         }
         String content = HtmlUtils.htmlUnescape(discussPost.getContent()); // 内容反转义，不然 markdown 格式无法显示
         discussPost.setContent(content);
@@ -223,7 +223,7 @@ public class DiscussPostController implements CommunityConstant {
 
         model.addAttribute("orderMode", orderMode);
 
-        return "/site/discuss-detail";
+        return "site/discuss-detail";
     }
 
     // 置顶

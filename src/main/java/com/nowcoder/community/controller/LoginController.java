@@ -55,12 +55,12 @@ public class LoginController implements CommunityConstant {
 
     @RequestMapping(path = "/register", method = RequestMethod.GET)
     public String getRegisterPage(){
-        return "/site/register";
+        return "site/register";
     }
 
     @RequestMapping(path = "/login", method = RequestMethod.GET)
     public String getLoginPage(){
-        return "/site/login";
+        return "site/login";
     }
 
     @RequestMapping(path = "/register", method = RequestMethod.POST)
@@ -71,12 +71,12 @@ public class LoginController implements CommunityConstant {
             // 没有错误信息，注册成功，直接跳到首页
             model.addAttribute("msg", "注册成功，已经向您的邮箱发送了一封激活邮件，请尽快激活！");
             model.addAttribute("target", "/index");
-            return "/site/operate-result";
+            return "site/operate-result";
         }else {
             model.addAttribute("usernameMsg", map.get("usernameMsg"));
             model.addAttribute("passwordMsg", map.get("passwordMsg"));
             model.addAttribute("emailMsg", map.get("emailMsg"));
-            return "/site/register";
+            return "site/register";
         }
     }
 
@@ -99,7 +99,7 @@ public class LoginController implements CommunityConstant {
             model.addAttribute("msg", "激活失败！激活码不正确！");
             model.addAttribute("target", "/index");
         }
-        return "/site/operate-result";
+        return "site/operate-result";
     }
 
     //验证码图片
@@ -133,22 +133,23 @@ public class LoginController implements CommunityConstant {
 
     //登录
     @RequestMapping(path = "/login", method = RequestMethod.POST)
-    public String login(String username, String password, String code, boolean rememberme,  //最后两个是”验证码“ 和 ”记住我“
+    public String login(String username, String password, String code,
+                        @RequestParam(value = "rememberMe", required = false)boolean rememberMe,  //最后两个是”验证码“ 和 ”记住我“
                         Model model, HttpServletResponse response, @CookieValue("kaptchaOwner")String kaptchaOwner){   //Model返回数据，session存code
         //验证码判断
         String kaptcha = null;
-        if(StringUtils.isNoneBlank(kaptchaOwner)){  // 如果还未过期
+        if(StringUtils.isNotBlank(kaptchaOwner)){  // 如果还未过期
             String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
             kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
         }
         if(StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)){  //验证码不区分大小写
             model.addAttribute("codeMsg", "验证码不正确");
-            return "/site/login";
+            return "site/login";
         }
 
         //账号密码，交给service判断
         //定义常量区分“记住我”,见常量工具接口
-        int expiredSeconds = rememberme ? REMEMBER_EXPIRED_SECONDS : DEFAULT_EXPIRED_SECONDS;
+        int expiredSeconds = rememberMe ? REMEMBER_EXPIRED_SECONDS : DEFAULT_EXPIRED_SECONDS;
         Map<String, Object> map =userService.login(username, password, expiredSeconds);
         if(map.containsKey("ticket")){
             //success
@@ -161,7 +162,7 @@ public class LoginController implements CommunityConstant {
         }else{
             model.addAttribute("usernameMsg", map.get("usernameMsg"));
             model.addAttribute("passwordMsg", map.get("passwordMsg"));
-            return "/site/login";
+            return "site/login";
         }
     }
 
@@ -177,7 +178,7 @@ public class LoginController implements CommunityConstant {
 
     @RequestMapping(path = "/forget" ,method = RequestMethod.GET)
     public String getForgetPage(){
-        return "/site/forget";
+        return "site/forget";
     }
 
     // 邮箱验证码
@@ -201,18 +202,18 @@ public class LoginController implements CommunityConstant {
         if (StringUtils.isBlank(verifyCode) || StringUtils.isBlank(code) || !code.equalsIgnoreCase(verifyCode)) {
             // 验证码错误，返回重置密码页面
             model.addAttribute("codeMsg", "验证码错误!");
-            return "/site/forget";
+            return "site/forget";
         }
 
         Map<String, Object> map = userService.resetPassword(email, password);
         if (map == null || map.isEmpty()) {
             model.addAttribute("msg", "重置密码成功，正在前往登录页面，请重新登录!");
             model.addAttribute("target", "/login");
-            return "/site/operate-result";
+            return "site/operate-result";
         } else {
             model.addAttribute("emailMsg", map.get("emailMsg"));
             model.addAttribute("passwordMsg", map.get("passwordMsg"));
-            return "/site/forget";
+            return "site/forget";
         }
     }
 }

@@ -15,7 +15,7 @@ public class PostReadCountSyncTask {
     @Autowired
     private DiscussPostService discussPostService;
 
-    @Scheduled(fixedRate = 1000 * 60 * 5)  // 测试用，5分钟执行一次
+    @Scheduled(fixedRate = 1000 * 60 * 60 * 24)  // 每天一次
     public void syncReadCountToDatabase() {
         discussPostService.updatePostReadCountInDatabase();
     }

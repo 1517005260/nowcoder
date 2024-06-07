@@ -15,7 +15,7 @@ public interface CommunityConstant {
     int DEFAULT_EXPIRED_SECONDS = 3600*12;
 
     //记住我
-    int REMEMBER_EXPIRED_SECONDS = 3600*24*30;
+    int REMEMBER_EXPIRED_SECONDS = 3600*24*15;
 
     // 实体类型——帖子1 评论2 用户3
     int ENTITY_TYPE_POST = 1;

@@ -23,7 +23,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-@Controller
+/*@Controller
 public class ShareController implements CommunityConstant {
     private static final Logger logger = LoggerFactory.getLogger(ShareController.class);
 
@@ -62,4 +62,4 @@ public class ShareController implements CommunityConstant {
 
         return CommunityUtil.getJSONString(0, null, map);
     }
-}
+}*/
