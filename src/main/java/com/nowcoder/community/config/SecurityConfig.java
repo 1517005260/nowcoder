@@ -22,11 +22,11 @@ public class SecurityConfig implements CommunityConstant {
         return web -> web.ignoring().requestMatchers("/resources/**");
     }
 
-    // 授权
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // 授权请求
-        http.authorizeHttpRequests(authorize -> authorize.requestMatchers(
+        http.authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(
                         "/user/setting",  // 用户设置
                         "/user/upload",   // 上传头像
                         "/user/updatePassword",  // 修改密码
@@ -94,6 +94,12 @@ public class SecurityConfig implements CommunityConstant {
         // 由于底层是Filter，执行在我们写的Controller之前，所以如果不做处理，我们的/logout处理就无效了
         // 覆盖它默认的逻辑，才能执行我们自己的退出代码
         http.logout(logout -> logout.logoutUrl("/securitylogout")); // 随便让他拦截一个项目中没有的路径，这样我们的/logout就逃过了Security的监管
+
+        // 禁用X-Frame-Options
+        http.headers(headers -> headers
+                .frameOptions(frameOptions -> frameOptions.disable())
+        );
+
         // 默认开启防止CSRF攻击，如果要部分关闭，用下面的配置
         // http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.ignoringRequestMatchers("/actuator/**"));
         return http.build();

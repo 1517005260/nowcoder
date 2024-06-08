@@ -10,13 +10,21 @@ import com.nowcoder.community.util.CommunityConstant;
 import com.nowcoder.community.util.CommunityUtil;
 import com.nowcoder.community.util.HostHolder;
 import com.nowcoder.community.util.RedisKeyUtil;
+import io.micrometer.common.util.StringUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.HtmlUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
 
 @Controller
@@ -43,9 +51,81 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Value("${community.path.domain}")
+    private String domain;
+
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
+
+    // editorMd 图片上传地址
+    @Value("${community.path.editormdUploadPath}")
+    private String editormdUploadPath;
+
     @RequestMapping(path = "/publish", method = RequestMethod.GET)
     public String getPublishPage(Model model){
         return "site/publish-posts";
+    }
+
+    // 处理帖子上传图片
+    @RequestMapping(path = "/uploadMdPic", method = RequestMethod.POST)
+    @ResponseBody
+    public String uploadMdPic(@RequestParam(value = "editormd-image-file", required = false) MultipartFile file) {
+
+        String url = null; // 图片访问地址
+        try {
+            // 获取上传文件的名称
+            String trueFileName = file.getOriginalFilename();
+            String suffix = trueFileName.substring(trueFileName.lastIndexOf("."));
+            String fileName = CommunityUtil.genUUID() + suffix;
+
+            // 图片存储路径
+            File dest = new File(editormdUploadPath + "/" + fileName);
+            if (!dest.getParentFile().exists()) {
+                dest.getParentFile().mkdirs();
+            }
+
+            // 保存图片到存储路径
+            file.transferTo(dest);
+
+            // 图片访问地址
+            url = domain + contextPath + "/upload/" + fileName;
+            System.out.println(url);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return CommunityUtil.getEditorMdJSONString(0, "上传失败", url);
+        }
+        return CommunityUtil.getEditorMdJSONString(1, "上传成功", url);
+    }
+
+    // 帖子读取图片
+    @RequestMapping(path = "/upload/{fileName}", method = RequestMethod.GET)
+    public void getMdPic(@PathVariable("fileName") String fileName, HttpServletResponse response) {
+        // 服务器存放路径
+        String filePath = editormdUploadPath + "/" + fileName;
+
+        File file = new File(filePath);
+        if (!file.exists()) {
+            System.out.println("文件不存在: " + filePath);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        String suffix = fileName.substring(fileName.lastIndexOf(".") + 1);
+
+        // 响应文件
+        response.setContentType("image/" + suffix);
+        try (
+                OutputStream os = response.getOutputStream();
+                FileInputStream fis = new FileInputStream(file);
+        ) {
+            byte[] buffer = new byte[1024];
+            int b;
+            while ((b = fis.read(buffer)) != -1) {
+                os.write(buffer, 0, b);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     //处理增加帖子异步请求

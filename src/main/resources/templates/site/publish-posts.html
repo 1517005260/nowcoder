@@ -77,8 +77,12 @@
             syncScrolling: "single",
             path: "../editor-md/lib/",
             saveHTMLToTextarea: true, // 方便post提交表单
-            imageUpload: false,
-            placeholder: "欢迎来到帖子发布界面~ 本论坛支持 Markdown/非Markdown 格式的帖子~"
+            placeholder: "欢迎来到帖子发布界面~ 本论坛支持 Markdown/非Markdown 格式的帖子~",
+            // 上传图片
+            imageUpload : true,
+            imageFormats : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+            imageUploadURL : CONTEXT_PATH + "/discuss/uploadMdPic", // 后端上传图片的服务地址
+            onload : function() {}
         });
 
         // 拦截 @ 符号输入
